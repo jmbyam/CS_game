@@ -1,5 +1,5 @@
-define # 128
-define . 1479
+define # 1
+define . 1
 define ? 192
 worldsize 40 22
 world  0 ########################################

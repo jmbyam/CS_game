@@ -170,7 +170,7 @@ int main(int argc, char** argv) {
     alienActor.speed = globalSpeed;
 
     std::vector<GameLib::Actor*> columns;
-    for (int i = 0; i < world.worldSizeX; i++) {
+    for (int i = 0; i < 1/*world.worldSizeX*/; i++) {
         GameLib::Actor *actor = new GameLib::Actor(nullptr, new ColumnActorComponent(), new GameLib::SimplePhysicsComponent(), new ColumnGraphicsComponent());
         columns.push_back(actor);
         world.actors.push_back(actor);
