@@ -24,7 +24,7 @@ namespace GameLib {
     public:
         virtual ~SimplePhysicsComponent() {}
 
-        void update(Actor& a, World& w);
+        void update(Actor& a, World& w) override;
         bool collideWorld(Actor& a, World& w) override;
         bool collideDynamic(Actor& a, Actor& b) override;
         bool collideStatic(Actor& a, Actor& b) override;
