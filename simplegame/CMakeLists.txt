@@ -6,9 +6,16 @@ include_directories(${gamelib_SOURCE_DIR}/../gamelib)
 
 add_executable(simplegame
     main.cpp
+    DungeonActorComponent.cpp
     )
 target_link_libraries(simplegame gamelib)
-target_link_libraries(simplegame stdc++fs)
+
+set(GCC_EXPECTED_VERSION 9.0.0)
+if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS GCC_EXPECTED_VERSION)
+    message("Using stdc++fs")
+    target_link_libraries(simplegame stdc++fs)
+endif()
+
 find_library(SDL2_LIB NAMES SDL2)
 find_library(SDL2_IMAGE_LIB NAMES SDL2_image)
 find_library(SDL2_MIXER_LIB NAMES SDL2_mixer)

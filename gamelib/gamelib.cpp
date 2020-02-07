@@ -5,5 +5,4 @@
 #include <gamelib.hpp>
 
 namespace GameLib {
-
 }

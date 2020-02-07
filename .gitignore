@@ -363,7 +363,7 @@ compile_commands.json
 CTestTestfile.cmake
 _deps
 build/**/
-
+build/*ninja*
 *.o
 *.a
 a.out

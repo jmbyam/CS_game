@@ -6,6 +6,9 @@
 #include <gamelib_object.hpp>
 #include <gamelib_actor.hpp>
 #include <gamelib_world.hpp>
+#include <gamelib_locator.hpp>
+#include <gamelib_command.hpp>
+#include <gamelib_random.hpp>
 
 namespace GameLib {
 }

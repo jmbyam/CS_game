@@ -18,10 +18,18 @@ $ cmake --build .
 Install g++-9 (Required to use std::filesystem on ubuntu), cmake, make, SDL2_ttf, SDL2_mixer, and CZMQ with your 
 preferred pacakge manager. Next run
 ```
-cmake .
-make
+cd build
+cmake ..
+cmake --build .
 ./simplegame/simplegame
 ```
+On ubuntu the version of cmake is 2 versions out of date. Inorder to install the latest cmake run
+```
+$ sudo snap install --classic cmake
+```
+
+
+MIDI Playback: You may need to install `timidity++` and `gt` which are the soundfonts and patches needed for SDL2_Mixer.
 
 ## Adding files to CMakeLists.txt
 

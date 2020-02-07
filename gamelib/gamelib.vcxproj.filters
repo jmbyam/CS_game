@@ -13,6 +13,12 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Header Files\components">
+      <UniqueIdentifier>{a9865788-cabf-4ed2-840f-24aa92379d23}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\components">
+      <UniqueIdentifier>{be66c8d9-b3ab-4727-9300-1eb662ebfde4}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h">
@@ -45,6 +51,36 @@
     <ClInclude Include="gamelib_world.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="gamelib_command.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="gamelib_audio.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="gamelib_locator.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="gamelib_input_handler.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="gamelib_graphics.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="gamelib_random.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="gamelib_actor_component.hpp">
+      <Filter>Header Files\components</Filter>
+    </ClInclude>
+    <ClInclude Include="gamelib_graphics_component.hpp">
+      <Filter>Header Files\components</Filter>
+    </ClInclude>
+    <ClInclude Include="gamelib_input_component.hpp">
+      <Filter>Header Files\components</Filter>
+    </ClInclude>
+    <ClInclude Include="gamelib_physics_component.hpp">
+      <Filter>Header Files\components</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="gamelib.cpp">
@@ -71,5 +107,38 @@
     <ClCompile Include="gamelib_world.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="gamelib_command.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="gamelib_audio.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="gamelib_locator.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="gamelib_input_handler.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="gamelib_graphics.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="gamelib_random.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="gamelib_actor_component.cpp">
+      <Filter>Source Files\components</Filter>
+    </ClCompile>
+    <ClCompile Include="gamelib_graphics_component.cpp">
+      <Filter>Source Files\components</Filter>
+    </ClCompile>
+    <ClCompile Include="gamelib_input_component.cpp">
+      <Filter>Source Files\components</Filter>
+    </ClCompile>
+    <ClCompile Include="gamelib_physics_component.cpp">
+      <Filter>Source Files\components</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="CMakeLists.txt" />
   </ItemGroup>
 </Project>

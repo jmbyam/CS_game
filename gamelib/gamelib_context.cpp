@@ -16,6 +16,10 @@ namespace filesystem = std::filesystem;
 #include <gamelib.hpp>
 
 namespace GameLib {
+    float Context::deltaTime = 0;
+    float Context::currentTime_ms = 0;
+    float Context::currentTime_s = 0;
+
     //////////////////////////////////////////////////////////////////
     // CONSTRUCTOR/DESTRUCTOR ////////////////////////////////////////
     //////////////////////////////////////////////////////////////////
@@ -42,7 +46,7 @@ namespace GameLib {
 
     void Context::_setError(std::string&& errorString) {
         errorString_ = std::move(errorString);
-        HFLOGWARN("Error detected: %s", errorString.c_str());
+        HFLOGWARN("Error detected: %s", errorString_.c_str());
         hadError_ = true;
     }
 
@@ -101,12 +105,17 @@ namespace GameLib {
         } else {
             HFLOGINFO("Audio Device:      %s", SDL_GetAudioDeviceName(0, 0));
             HFLOGINFO("Audio initialized: %dHz %d channels", frequency, channels);
+            audioInitialized_ = true;
         }
         return result;
     }
 
     bool Context::_initScreen(int width, int height, int windowFlags) {
-        return SDL_CreateWindowAndRenderer(width, height, windowFlags, &window_, &renderer_) == 0;
+        screenWidth = width;
+        screenHeight = height;
+        bool result = SDL_CreateWindowAndRenderer(width, height, windowFlags, &window_, &renderer_) == 0;
+        windowSurface_ = SDL_GetWindowSurface(window_);
+        return result;
     }
 
     void Context::_kill() {
@@ -116,7 +125,9 @@ namespace GameLib {
         freeAudioClips();
         freeMusicClips();
         Mix_CloseAudio();
+        audioInitialized_ = false;
         SDL_Quit();
+        initialized_ = false;
     }
 
     //////////////////////////////////////////////////////////////////
@@ -124,10 +135,10 @@ namespace GameLib {
     //////////////////////////////////////////////////////////////////
 
     void Context::_openGameControllers() {
-        joystickCount = std::min<int>(MaxJoysticks, SDL_NumJoysticks());
+        gameControllersConnected = std::min<int>(MaxGameControllers, SDL_NumJoysticks());
 
-        for (int i = 0; i < MaxJoysticks; i++) {
-            JOYSTICKSTATE& j = joysticks[i];
+        for (int i = 0; i < MaxGameControllers; i++) {
+            GAMECONTROLLERSTATE& j = gameControllers[i];
             if (SDL_IsGameController(i)) {
                 // do not open controllers already opened
                 if (j.controller)
@@ -135,7 +146,7 @@ namespace GameLib {
                 j.controller = SDL_GameControllerOpen(i);
                 // reset this joystick if it wasn't opened
                 if (!j.controller) {
-                    j = JOYSTICKSTATE();
+                    j = GAMECONTROLLERSTATE();
                 } else {
                     j.name = SDL_GameControllerNameForIndex(i);
                     HFLOGINFO("Joystick %i '%s' connected", i, j.name.c_str());
@@ -144,27 +155,41 @@ namespace GameLib {
             } else if (j.enabled) {
                 HFLOGINFO("Joystick %i '%s' disconnected", i, j.name.c_str());
                 SDL_GameControllerClose(j.controller);
-                j = JOYSTICKSTATE();
+                j = GAMECONTROLLERSTATE();
             }
         }
     }
 
     void Context::_closeGameControllers() {
-        for (int i = 0; i < MaxJoysticks; i++) {
-            JOYSTICKSTATE& j = joysticks[i];
+        for (int i = 0; i < MaxGameControllers; i++) {
+            GAMECONTROLLERSTATE& j = gameControllers[i];
             if (!j.controller)
                 continue;
             HFLOGINFO("Joystick %i '%s' closed", i, j.name.c_str());
             SDL_GameControllerClose(j.controller);
-            j = JOYSTICKSTATE();
+            j = GAMECONTROLLERSTATE();
         }
     }
 
     void Context::_updateGameControllers() {
-        for (unsigned i = 0; i < joystickCount; i++) {
-            JOYSTICKSTATE& j = joysticks[i];
+        for (unsigned i = 0; i < gameControllersConnected; i++) {
+            GAMECONTROLLERSTATE& j = gameControllers[i];
             if (!j.enabled)
                 continue;
+            short s1x = SDL_GameControllerGetAxis(j.controller, SDL_CONTROLLER_AXIS_LEFTX);
+            short s1y = SDL_GameControllerGetAxis(j.controller, SDL_CONTROLLER_AXIS_LEFTY);
+            short s2x = SDL_GameControllerGetAxis(j.controller, SDL_CONTROLLER_AXIS_RIGHTX);
+            short s2y = SDL_GameControllerGetAxis(j.controller, SDL_CONTROLLER_AXIS_RIGHTY);
+            j.axis1.x = clamp<float>(s1x / 32767.0f, -1.0f, 1.0f);
+            j.axis1.y = clamp<float>(s1y / 32767.0f, -1.0f, 1.0f);
+            j.axis2.x = clamp<float>(s2x / 32767.0f, -1.0f, 1.0f);
+            j.axis2.y = clamp<float>(s2y / 32767.0f, -1.0f, 1.0f);
+            j.a = SDL_GameControllerGetButton(j.controller, SDL_CONTROLLER_BUTTON_A);
+            j.b = SDL_GameControllerGetButton(j.controller, SDL_CONTROLLER_BUTTON_B);
+            j.x = SDL_GameControllerGetButton(j.controller, SDL_CONTROLLER_BUTTON_X);
+            j.y = SDL_GameControllerGetButton(j.controller, SDL_CONTROLLER_BUTTON_Y);
+            j.back = SDL_GameControllerGetButton(j.controller, SDL_CONTROLLER_BUTTON_BACK);
+            j.start = SDL_GameControllerGetButton(j.controller, SDL_CONTROLLER_BUTTON_START);
         }
     }
 
@@ -179,6 +204,7 @@ namespace GameLib {
             checkForGameControllers = 100;
             _openGameControllers();
         }
+        _updateGameControllers();
 
         int eventCount{ 0 };
         SDL_Event e;
@@ -243,7 +269,7 @@ namespace GameLib {
         return SDL_RenderCopyEx(renderer_, t->texture, nullptr, &dstrect, spriteInfo.angle, &center, flip);
     }
 
-    void Context::clearScreen(glm::u8vec4 color) {
+    void Context::clearScreen(SDL_Color color) {
         SDL_SetRenderDrawColor(renderer_, color.r, color.g, color.b, color.a);
         SDL_RenderClear(renderer_);
     }
@@ -380,16 +406,16 @@ namespace GameLib {
         SDL_Surface* surface = IMG_Load(p.c_str());
         if (!surface)
             return 0;
-        SDL_Surface* tile = SDL_CreateRGBSurfaceWithFormat(0, w, h, 32, SDL_PIXELFORMAT_RGBA32);
-        if (!tile) {
-            SDL_FreeSurface(surface);
-            return 0;
-        }
         int tileCount = 0;
         SDL_Rect dstrect{ 0, 0, w, h };
         auto tileset = _initTileset(tilesetId);
         for (int y = 0; y < surface->h; y += h) {
             for (int x = 0; x < surface->w; x += w) {
+                SDL_Surface* tile = SDL_CreateRGBSurfaceWithFormat(0, w, h, 32, SDL_PIXELFORMAT_RGBA32);
+                if (!tile) {
+                    SDL_FreeSurface(surface);
+                    return 0;
+                }
                 SDL_Rect srcrect{ x, y, w, h };
                 SDL_BlitSurface(surface, &srcrect, tile, &dstrect);
                 _addTile(tilesetId, tile);
@@ -444,6 +470,8 @@ namespace GameLib {
     }
 
     AUDIOINFO* Context::loadAudioClip(int clipId, const std::string& filename) {
+        if (!audioInitialized_)
+            return nullptr;
         std::string p = findSearchPath(filename);
         if (p.empty())
             return nullptr;
@@ -463,11 +491,22 @@ namespace GameLib {
     }
 
     int Context::playAudioClip(int clipId, int channel) {
+        if (!audioInitialized_)
+            return -1;
         AUDIOINFO* audio = getAudioClip(clipId);
         if (!audio)
             return -1;
         return Mix_PlayChannel(-1, audio->chunk, 0);
     }
+
+    void Context::stopAudioChannel(int channel) { Mix_HaltChannel(channel); }
+
+    void Context::setChannelVolume(int channel, float volume) {
+        int v = (int)clamp(volume * 128.0f + 0.5f, 0.0f, 128.0f);
+        Mix_Volume(channel, v);
+    }
+
+    float Context::getChannelVolume(int channel) { return clamp(Mix_Volume(channel, -1) / 128.0f, 0.0f, 1.0f); }
 
     MUSICINFO* Context::initMusicClip(int musicId) {
         if (musicClips_[musicId]) {
@@ -478,6 +517,8 @@ namespace GameLib {
     }
 
     MUSICINFO* Context::loadMusicClip(int musicId, const std::string& filename) {
+        if (!audioInitialized_)
+            return nullptr;
         std::string p = findSearchPath(filename);
         if (p.empty())
             return nullptr;
@@ -511,10 +552,13 @@ namespace GameLib {
     }
 
     bool Context::playMusicClip(int musicId, int loops, int fadems) {
+        if (!audioInitialized_)
+            return false;
         MUSICINFO* music = getMusicClip(musicId);
         if (!music)
             return false;
         return Mix_FadeInMusic(music->chunk, loops, fadems) == 0;
     }
 
+    void Context::stopMusicClip() { Mix_HaltMusic(); }
 }

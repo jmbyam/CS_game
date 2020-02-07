@@ -1,25 +1,32 @@
 #include "pch.h"
-#include "gamelib_world.hpp"
+#include <gamelib_world.hpp>
+#include <gamelib_actor.hpp>
 
 namespace GameLib {
     namespace Tokens {
 #define WORLD_TOKENS(ENUM)                                                                                                                                     \
     ENUM(WORLDSIZE)                                                                                                                                            \
     ENUM(WORLD)                                                                                                                                                \
-    ENUM(DEFINE)
+    ENUM(DEFINE)                                                                                                                                               \
+    ENUM(COLLIDE)\
+	ENUM(NOCOLLIDE)
 #define ENUM_VAL(x) x,
-#define ENUM_MAP(x) { #x, Tiles::##x },
+#define ENUM_MAP(x) { #x, Tiles::x },
 
         enum class Tiles { WORLD_TOKENS(ENUM_VAL) };
         std::map<std::string, Tiles> worldTokens{ WORLD_TOKENS(ENUM_MAP) };
         std::map<char, unsigned> mapCell{};
+        char nocollide = '.';
     }
 
     World::World() { resize(worldSizeX, worldSizeY); }
 
     World::~World() {
         tiles.clear();
-        actors.clear();
+        collisionTiles.clear();
+        dynamicActors.clear();
+        staticActors.clear();
+        triggerActors.clear();
     }
 
     void World::resize(unsigned sizeX, unsigned sizeY) {
@@ -27,27 +34,102 @@ namespace GameLib {
         tiles.resize(numTiles);
         worldSizeX = sizeX;
         worldSizeY = sizeY;
+        collisionTiles.resize(numTiles * CollisionTileResolution);
     }
 
-    void World::setTile(unsigned x, unsigned y, Tile tile) {
+    void World::start() {
+        for (Actor* a : triggerActors) {
+            a->beginPlay();
+        }
+        for (Actor* a : staticActors) {
+            a->beginPlay();
+        }
+        for (Actor* a : dynamicActors) {
+            a->beginPlay();
+        }
+    }
+
+    void World::update(float deltaTime) {
+        for (auto& actor : triggerActors) {
+            if (!actor->active)
+                continue;
+            actor->update(deltaTime, *this);
+        }
+        for (auto& actor : staticActors) {
+            if (!actor->active)
+                continue;
+            actor->update(deltaTime, *this);
+        }
+        for (auto& actor : dynamicActors) {
+            if (!actor->active)
+                continue;
+            actor->update(deltaTime, *this);
+        }
+    }
+
+    void World::physics(float deltaTime) {
+        for (auto& actor : staticActors) {
+            actor->physics(deltaTime, *this);
+        }
+        for (auto& actor : dynamicActors) {
+            if (!actor->active)
+                continue;
+            actor->physics(deltaTime, *this);
+        }
+    }
+
+    void World::draw(Graphics& graphics) {
+        for (auto& actor : staticActors) {
+            if (!actor->active || !actor->visible)
+                continue;
+            actor->draw(graphics);
+        }
+        for (auto& actor : dynamicActors) {
+            if (!actor->active || !actor->visible)
+                continue;
+            actor->draw(graphics);
+        }
+    }
+
+    void World::setTile(int x, int y, Tile tile) {
         if (x >= worldSizeX || y >= worldSizeY)
             return;
         auto index = y * worldSizeX + x;
         tiles[index] = std::move(tile);
     }
 
-    Tile World::getTile(unsigned x, unsigned y) {
+    Tile& World::getTile(int x, int y) {
+        static Tile t;
         if (x >= worldSizeX || y >= worldSizeY)
-            return Tile();
+            return t;
         auto index = y * worldSizeX + x;
         return tiles[index];
     }
 
-    Tile World::getTile(unsigned x, unsigned y) const {
+    const Tile& World::getTile(int x, int y) const {
+        static Tile t;
         if (x >= worldSizeX || y >= worldSizeY)
-            return Tile();
+            return t;
         auto index = y * worldSizeX + x;
         return tiles[index];
+    }
+
+    int World::getCollisionTile(float x, float y) const {
+        int ix = (int)(CollisionTileResolution * x);
+        int iy = (int)(CollisionTileResolution * y);
+        ix = clamp<int>(ix, 0, collisionSizeX - 1);
+        iy = clamp<int>(iy, 0, collisionSizeY - 1);
+        int index = iy * collisionSizeX + ix;
+        return collisionTiles[index];
+    }
+
+    void World::setCollisionTile(float x, float y, int value) {
+        int ix = (int)(CollisionTileResolution * x);
+        int iy = (int)(CollisionTileResolution * y);
+        ix = clamp<int>(ix, 0, collisionSizeX - 1);
+        iy = clamp<int>(iy, 0, collisionSizeY - 1);
+        int index = iy * collisionSizeX + ix;
+        collisionTiles[index] = value;
     }
 
     std::istream& World::readCharStream(std::istream& s) {
@@ -67,14 +149,18 @@ namespace GameLib {
         case Tokens::Tiles::WORLD:
             int row;
             s >> row;
-            for (unsigned i = 0; i < worldSizeX; i++) {
+            for (int i = 0; i < worldSizeX; i++) {
                 char c;
                 s >> c;
                 unsigned val = c;
                 if (Tokens::mapCell.count(c))
-                    val = c;
+                    val = Tokens::mapCell[val];
                 setTile(i, row, Tile(val));
+                getTile(i, row).flags = (c == Tokens::nocollide) ? 0 : 1;
             }
+            break;
+        case Tokens::Tiles::NOCOLLIDE:
+            s >> Tokens::nocollide;
             break;
         case Tokens::Tiles::DEFINE:
             char c;
@@ -127,12 +213,23 @@ namespace GameLib {
         // world 2 #  AAAAA     b        #
         // world 3 #<     #  AAAA     B >#
         // world 4 #######################
+
+        std::map<unsigned int, char> cellToChar;
+        for (auto& [k, v] : Tokens::mapCell) {
+            s << "define " << k << " " << v;
+            cellToChar[v] = k;
+        }
+
         s << "worldsize " << worldSizeX << " " << worldSizeY << "\n";
-        for (unsigned y = 0; y < worldSizeY; ++y) {
+        for (int y = 0; y < worldSizeY; ++y) {
             s << "world " << std::setw(2) << y << " ";
-            for (unsigned x = 0; x < worldSizeX; ++x) {
+            for (int x = 0; x < worldSizeX; ++x) {
                 auto t = getTile(x, y);
-                s << t.charDesc;
+                if (cellToChar.count(t.charDesc)) {
+                    s << cellToChar[t.charDesc];
+                } else {
+                    s << (char)t.charDesc;
+                }
             }
             s << "\n";
         }

@@ -22,6 +22,15 @@ namespace GameLib {
         operator bool() const { return initialized_; }
         bool hadError() const;
         const std::string errorString() const { return errorString_; }
+        bool audioInitialized() const { return audioInitialized_; }
+
+        //////////////////////////////////////////////////////////////
+        // TIMING ////////////////////////////////////////////////////
+        //////////////////////////////////////////////////////////////
+
+        static float currentTime_ms;
+        static float currentTime_s;
+        static float deltaTime;
 
         //////////////////////////////////////////////////////////////
         // SEARCH PATHS //////////////////////////////////////////////
@@ -42,7 +51,7 @@ namespace GameLib {
         //////////////////////////////////////////////////////////////
 
         // clear the screen to a color
-        void clearScreen(glm::u8vec4 color);
+        void clearScreen(SDL_Color color);
 
         // swap the back buffer to the front
         void swapBuffers();
@@ -99,6 +108,12 @@ namespace GameLib {
         int getAudioClipCount() const { return (int)audioClips_.size(); }
         // play an audio clip on a channel (-1 if any free channel)
         int playAudioClip(int clipId, int channel = -1);
+        // stop an audio channel from playing
+        void stopAudioChannel(int channel);
+        // set the volume for a specific channel in the range 0 to 1
+        void setChannelVolume(int channel, float volume);
+        // get the volume for a specific channel in the range 0 to 1
+        float getChannelVolume(int channel);
 
         //////////////////////////////////////////////////////////////
         // MUSIC CODE ////////////////////////////////////////////////
@@ -110,6 +125,7 @@ namespace GameLib {
         void freeMusicClips();
         int getMusicClipCount() const { return (int)musicClips_.size(); }
         bool playMusicClip(int musicId, int loops = 0, int fadems = 0);
+        void stopMusicClip();
 
         //////////////////////////////////////////////////////////////
         // EVENT HANDLING CODE ///////////////////////////////////////
@@ -128,25 +144,39 @@ namespace GameLib {
             int mod{ 0 };
         } keyboard;
 
-        // MaxJoysticks reflects the XInput library max of four controllers
-        static constexpr int MaxJoysticks{ 4 };
+        // MaxGameControllers reflects the XInput library max of four controllers
+        static constexpr int MaxGameControllers{ 4 };
 
-        // This is the number of joysticks available
-        unsigned joystickCount{ 0 };
+        // This is the number of gameControllers available
+        unsigned gameControllersConnected{ 0 };
 
         // This is an array of game pad information. If controller pointer is not null, it is available
-        struct JOYSTICKSTATE {
+        struct GAMECONTROLLERSTATE {
             bool enabled{ false };
             SDL_GameController* controller{ nullptr };
             std::string name;
-        } joysticks[MaxJoysticks];
+            glm::vec2 axis1{ 0.0f, 0.0f };
+            glm::vec2 axis2{ 0.0f, 0.0f };
+            float a;
+            float b;
+            float x;
+            float y;
+            float start;
+            float back;
+        } gameControllers[MaxGameControllers];
 
+        int screenWidth{ 0 };
+        int screenHeight{ 0 };
+        SDL_Surface* windowSurface() { return windowSurface_; }
+        SDL_Renderer* renderer() { return renderer_; }
     private:
         bool initialized_{ false };
+        bool audioInitialized_{ false };
         mutable bool hadError_{ false };
         std::string errorString_;
         SDL_Window* window_{ nullptr };
         SDL_Renderer* renderer_{ nullptr };
+        SDL_Surface* windowSurface_{ nullptr };
         SDL_AudioSpec audioSpec_;
         SDL_AudioDeviceID audioDeviceId_{ 0 };
         std::vector<std::string> searchPaths_;
