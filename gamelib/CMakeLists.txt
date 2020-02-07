@@ -2,11 +2,6 @@ cmake_minimum_required(VERSION 3.13)
 project(gamelib)
 include_directories(${PROJECT_SOURCE_DIR})
 
-if (APPLE)
-set(CXX /usr/local/opt/llvm/bin/c++)
-set(CC  /usr/local/opt/llvm/bin/cc)
-endif()
-
 add_library(gamelib STATIC
     gamelib.cpp
     gamelib_actor.cpp
@@ -27,9 +22,9 @@ add_library(gamelib STATIC
     hatchetfish_stopwatch.cpp
     )
 
-if (!APPLE)
+#if (!APPLE)
 target_precompile_headers(gamelib PRIVATE pch.h)
-endif()
+#endif()
 
 install(TARGETS gamelib DESTINATION lib)
 #[[install(TARGETS
