@@ -6,7 +6,7 @@
 namespace GameLib {
     class DungeonActorComponent : public ActorComponent {
     public:
-        virtual ~DungeonActorComponent() {}
+        virtual ~DungeonActorComponent();
 
         void handleCollisionWorld(Actor& a, World& w) override;
     };
