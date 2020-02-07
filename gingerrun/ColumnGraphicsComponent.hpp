@@ -5,5 +5,5 @@ class ColumnGraphicsComponent : public GameLib::GraphicsComponent {
 public:
     virtual ~ColumnGraphicsComponent() {}
 
-	void update(GameLib::Actor& actor, GameLib::Graphics& graphics) override;
+	void draw(GameLib::Actor& actor, GameLib::Graphics& graphics) override;
 };

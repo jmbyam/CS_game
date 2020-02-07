@@ -21,21 +21,51 @@ namespace GameLib {
         delete graphics_;
     }
 
-    void Actor::beginPlay() {}
+    void Actor::beginPlay() {
+        if (actor_)
+            actor_->beginPlay(*this);
+    }
 
-    void Actor::update(float deltaTime, World& world, Graphics& graphics) {
+    void Actor::update(float deltaTime, World& world) {
         dt = deltaTime;
         if (input_)
             input_->update(*this);
         if (actor_)
             actor_->update(*this, world);
-        if (physics_)
-            physics_->update(*this, world);
-        if (graphics_)
-            graphics_->update(*this, graphics);
     }
 
-    void Actor::startOverlap(const_weak_ptr otherObject) {}
+    void Actor::physics(float deltaTime, World& world) {
+        if (!physics_)
+            return;
+        physics_->update(*this, world);
+        if (actor_) {
+            if (physics_->collideWorld(*this, world))
+                actor_->handleCollisionWorld(*this, world);
 
-    void Actor::endOverlap(const_weak_ptr otherObject) {}
+            for (Actor* b : world.staticActors) {
+                if (physics_->collideDynamic(*this, *b))
+                    actor_->handleCollisionStatic(*this, *b);
+            }
+
+            for (Actor* b : world.dynamicActors) {
+                if (physics_->collideDynamic(*this, *b))
+                    actor_->handleCollisionDynamic(*this, *b);
+            }
+
+            for (Actor* trigger : world.triggerActors) {
+                if (!triggerInfo.overlapping && physics_->collideTrigger(*this, *trigger)) {
+                    triggerInfo.overlapping = true;
+                    actor_->beginOverlap(*this, *trigger);
+                } else if (triggerInfo.overlapping && !physics_->collideTrigger(*this, *trigger)) {
+                    triggerInfo.overlapping = false;
+                    actor_->endOverlap(*this, *trigger);
+                }
+            }
+        }
+    }
+
+    void Actor::draw(Graphics& graphics) {
+        if (visible && graphics_)
+            graphics_->draw(*this, graphics);
+    }
 }

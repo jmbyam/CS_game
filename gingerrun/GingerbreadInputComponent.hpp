@@ -1,5 +1,5 @@
 #pragma once
-#include <gamelib_component.hpp>
+#include <gamelib_input_component.hpp>
 
 class GingerbreadInputComponent : public GameLib::InputComponent {
 public:

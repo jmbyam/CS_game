@@ -152,17 +152,17 @@ int main(int argc, char** argv) {
     float globalSpeed = 16.0f;
     //(float)graphics.getTileSizeX();
     GameLib::Actor player(
-        new GingerbreadInputComponent(), new GameLib::SimpleActorComponent(), new CollisionPhysicsComponent(), new GameLib::SimpleGraphicsComponent());
+        new GingerbreadInputComponent(), new GameLib::ActorComponent(), new CollisionPhysicsComponent(), new GameLib::SimpleGraphicsComponent());
     player.speed = globalSpeed;
     player.position.x = graphics.getCenterX() / (float)graphics.getTileSizeX();
     player.position.y = graphics.getCenterY() / (float)graphics.getTileSizeY();
     player.spriteLibId = 1;
     player.spriteId = 0;
-    world.actors.push_back(&player);
+    world.addDynamicActor(&player);
 
     GameLib::Actor alienActor(new AlienInputComponent(), new AlienActorComponent(), new CollisionPhysicsComponent(), new GameLib::SimpleGraphicsComponent());
 
-    world.actors.push_back(&alienActor);
+    world.addDynamicActor(&alienActor);
     alienActor.position.x = 0;
     alienActor.position.y = graphics.getCenterY() / (float)graphics.getTileSizeY();
     alienActor.spriteLibId = 1;
@@ -170,10 +170,10 @@ int main(int argc, char** argv) {
     alienActor.speed = globalSpeed;
 
     std::vector<GameLib::Actor*> columns;
-    for (int i = 0; i < 1/*world.worldSizeX*/; i++) {
+    for (int i = 0; i < 0 /*world.worldSizeX*/; i++) {
         GameLib::Actor *actor = new GameLib::Actor(nullptr, new ColumnActorComponent(), new GameLib::SimplePhysicsComponent(), new ColumnGraphicsComponent());
         columns.push_back(actor);
-        world.actors.push_back(actor);
+        world.addDynamicActor(actor);
         actor->clipToWorld = false;
         actor->position.x = (float)i;
         actor->position.y = (float)world.worldSizeY - 1;
@@ -181,6 +181,7 @@ int main(int argc, char** argv) {
         actor->spriteLibId = 1;
         actor->spriteId = 1;
         actor->speed = 0.25f * globalSpeed;        
+		actor->movable = false;
     }
 
     float t0 = stopwatch.Stop_sf();
@@ -208,7 +209,8 @@ int main(int argc, char** argv) {
         //    }
         //}
 
-        world.update(dt, graphics);
+        world.update(dt);
+        world.draw(graphics);
 
         minchofont.draw(0, 0, "Hello, world!", GameLib::Red, GameLib::Font::SHADOWED);
         gothicfont.draw((int)graphics.getWidth(), 0, "Hello, world!", GameLib::Blue, GameLib::Font::HALIGN_RIGHT | GameLib::Font::SHADOWED);

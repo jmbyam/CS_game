@@ -1,9 +1,12 @@
 #ifndef GAMELIB_ACTOR_HPP
 #define GAMELIB_ACTOR_HPP
 
-#include <gamelib_component.hpp>
 #include <gamelib_object.hpp>
 #include <gamelib_world.hpp>
+#include <gamelib_input_component.hpp>
+#include <gamelib_actor_component.hpp>
+#include <gamelib_physics_component.hpp>
+#include <gamelib_graphics_component.hpp>
 
 namespace GameLib {
     class InputComponent;
@@ -21,20 +24,27 @@ namespace GameLib {
         using const_weak_ptr = const std::weak_ptr<Actor>;
         using const_shared_ptr = const std::shared_ptr<Actor>;
 
+        // returns id of the actor
         unsigned getId() const { return id_; }
+        // returns a character description of the actor which is for saving/loading
         virtual char charDesc() const { return charDesc_; }
 
+        InputComponent* inputComponent() { return input_; }
+        ActorComponent* actorComponent() { return actor_; }
+        PhysicsComponent* physicsComponent() { return physics_; }
+        GraphicsComponent* graphicsComponent() { return graphics_; }
+
         // Called whenever the object is introduced into the game
-        virtual void beginPlay();
+        void beginPlay();
 
         // Called each frame the object needs to update itself before drawing
-        void update(float deltaTime, World& world, Graphics& graphics);
+        void update(float deltaTime, World& world);
 
-        // Called when an object has just started to overlap the bounding box of this object
-        virtual void startOverlap(const_weak_ptr otherObject);
+        // Called each frame for the object to handle collisions and physics
+        void physics(float deltaTime, World& world);
 
-        // Called when an object has just ended overlapping the bounding box of this object
-        virtual void endOverlap(const_weak_ptr otherObject);
+        // Called each frame to draw itself (not called for invisible objects)
+        void draw(Graphics& graphics);
 
         // Gets the world matrix for this actor which is transform * addlTransform
         glm::mat4 worldMatrix() const { return transform * addlTransform; }
@@ -67,8 +77,10 @@ namespace GameLib {
         ubool visible{ true };
         // is actor active for updating
         ubool active{ true };
-		// is object used for physics
+        // is object used for physics
         ubool clipToWorld{ true };
+        // is object unable to move
+        ubool movable{ true };
 
         // transform that takes this object to world space
         glm::mat4 transform;
@@ -92,7 +104,11 @@ namespace GameLib {
         glm::vec3 velocity{ 0.0f, 0.0f, 0.0f };
 
         // maximum speed
-        float speed{ 16.0f };
+        float speed{ 1.0f };
+
+        struct TRIGGERINFO {
+            bool overlapping{ false };
+        } triggerInfo;
 
     protected:
         std::string _updateDesc() override { return { "Actor" }; }
@@ -108,6 +124,27 @@ namespace GameLib {
 
         static unsigned idSource_;
     };
+
+    inline bool collides(GameLib::Actor& a, GameLib::Actor& b) {
+        glm::vec3 amin = a.position;
+        glm::vec3 amax = a.position + a.size;
+        glm::vec3 bmin = b.position;
+        glm::vec3 bmax = b.position + b.size;
+
+        bool overlapX = (amin.x <= bmax.x && amax.x >= bmin.x);
+        bool overlapY = (amin.y <= bmax.y && amax.y >= bmin.z);
+        bool overlapZ = (amin.z <= bmax.z && amax.z >= bmin.z);
+        return overlapX && overlapY && overlapZ;
+    }
+
+    inline bool pointInside(glm::vec3 p, GameLib::Actor& a) {
+        glm::vec3 amin = a.position;
+        glm::vec3 amax = a.position + a.size;
+        bool insideX = amin.x >= p.x && amax.x <= p.x;
+        bool insideY = amin.y >= p.y && amax.y <= p.y;
+        bool insideZ = amin.z >= p.z && amax.z <= p.z;
+        return insideX && insideY && insideZ;
+    }
 }
 
 #endif

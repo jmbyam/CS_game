@@ -5,7 +5,7 @@ void AlienActorComponent::update(GameLib::Actor& actor, GameLib::World& world) {
     float t = GameLib::Context::currentTime_s;
     int frame = (int)t;
 
-    actor.velocity.y += actor.dt * 9.0;
+    actor.velocity.y += actor.dt * 9.0f;
 
 	if (frame % 15 == 0) {
         animTime = t + 1;

@@ -159,15 +159,18 @@
   <ItemGroup>
     <ClInclude Include="gamelib.hpp" />
     <ClInclude Include="gamelib_actor.hpp" />
-    <ClInclude Include="gamelib_component.hpp" />
+    <ClInclude Include="gamelib_actor_component.hpp" />
+    <ClInclude Include="gamelib_graphics_component.hpp" />
     <ClInclude Include="gamelib_audio.hpp" />
     <ClInclude Include="gamelib_base.hpp" />
     <ClInclude Include="gamelib_command.hpp" />
     <ClInclude Include="gamelib_context.hpp" />
     <ClInclude Include="gamelib_graphics.hpp" />
+    <ClInclude Include="gamelib_input_component.hpp" />
     <ClInclude Include="gamelib_input_handler.hpp" />
     <ClInclude Include="gamelib_object.hpp" />
     <ClInclude Include="gamelib_locator.hpp" />
+    <ClInclude Include="gamelib_physics_component.hpp" />
     <ClInclude Include="gamelib_random.hpp" />
     <ClInclude Include="gamelib_world.hpp" />
     <ClInclude Include="hatchetfish.hpp" />
@@ -177,15 +180,18 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="gamelib_actor.cpp" />
-    <ClCompile Include="gamelib_component.cpp" />
+    <ClCompile Include="gamelib_actor_component.cpp" />
+    <ClCompile Include="gamelib_graphics_component.cpp" />
     <ClCompile Include="gamelib_audio.cpp" />
     <ClCompile Include="gamelib_command.cpp" />
     <ClCompile Include="gamelib_context.cpp" />
     <ClCompile Include="gamelib.cpp" />
     <ClCompile Include="gamelib_graphics.cpp" />
+    <ClCompile Include="gamelib_input_component.cpp" />
     <ClCompile Include="gamelib_input_handler.cpp" />
     <ClCompile Include="gamelib_locator.cpp" />
     <ClCompile Include="gamelib_object.cpp" />
+    <ClCompile Include="gamelib_physics_component.cpp" />
     <ClCompile Include="gamelib_random.cpp" />
     <ClCompile Include="gamelib_world.cpp" />
     <ClCompile Include="hatchetfish_log.cpp" />

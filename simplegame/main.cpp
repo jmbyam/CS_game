@@ -2,6 +2,7 @@
 // by Dr. Jonathan Metzgar et al
 // UAF CS Game Design and Architecture Course
 #include <gamelib.hpp>
+#include "DungeonActorComponent.hpp"
 
 #pragma comment(lib, "gamelib.lib")
 
@@ -248,7 +249,7 @@ int main(int argc, char** argv) {
     double spritesDrawn = 0;
     double frames = 0;
     GameLib::Actor player(new GameLib::SimpleInputComponent(),
-                          new GameLib::SimpleActorComponent(),
+                          new GameLib::DungeonActorComponent(),
                           new GameLib::SimplePhysicsComponent(),
                           new GameLib::SimpleGraphicsComponent());
     player.speed = (float)graphics.getTileSizeX();
@@ -259,14 +260,14 @@ int main(int argc, char** argv) {
     // GameLib::MoveAction moveAction;
     // moveAction.setActor(&player);
 
-    world.actors.push_back(&player);
+    world.addDynamicActor(&player);
 
     GameLib::Actor randomPlayer(new GameLib::RandomInputComponent(),
-                                new GameLib::SimpleActorComponent(),
+                                new GameLib::ActorComponent(),
                                 new GameLib::SimplePhysicsComponent(),
                                 new GameLib::SimpleGraphicsComponent());
 
-    world.actors.push_back(&randomPlayer);
+    world.addDynamicActor(&randomPlayer);
     randomPlayer.position.x = graphics.getCenterX() / (float)graphics.getTileSizeX();
     randomPlayer.position.y = graphics.getCenterY() / (float)graphics.getTileSizeY();
     randomPlayer.spriteId = 1;
@@ -287,8 +288,8 @@ int main(int argc, char** argv) {
 
         context.clearScreen(GameLib::Azure);
 
-        for (unsigned x = 0; x < world.worldSizeX; x++) {
-            for (unsigned y = 0; y < world.worldSizeY; y++) {
+        for (int x = 0; x < world.worldSizeX; x++) {
+            for (int y = 0; y < world.worldSizeY; y++) {
                 GameLib::SPRITEINFO s;
                 s.position = { x * 32, y * 32 };
                 auto t = world.getTile(x, y);
@@ -296,7 +297,9 @@ int main(int argc, char** argv) {
             }
         }
 
-        world.update(dt, graphics);
+        world.update(dt);
+        world.physics(dt);
+        world.draw(graphics);
 
         minchofont.draw(0, 0, "Hello, world!", GameLib::Red, GameLib::Font::SHADOWED);
         gothicfont.draw((int)graphics.getWidth(), 0, "Hello, world!", GameLib::Blue, GameLib::Font::HALIGN_RIGHT | GameLib::Font::SHADOWED);
