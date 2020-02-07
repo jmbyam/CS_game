@@ -1,8 +1,6 @@
 #include "DungeonActorComponent.hpp"
 
 namespace GameLib {
-    DungeonActorComponent::~DungeonActorComponent() {}
-
     void DungeonActorComponent::handleCollisionWorld(Actor& a, World& w) {
         // determine whether to move the player up, or to the left
         int ix = (int)std::round(a.position.x);
