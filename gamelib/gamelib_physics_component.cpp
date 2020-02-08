@@ -1,10 +1,5 @@
 #include "pch.h"
 #include "gamelib_physics_component.hpp"
-#include <string>
-using std::string;
-#include <iostream>
-using std::cout;
-using std::endl;
 
 namespace GameLib {
 
@@ -60,16 +55,14 @@ namespace GameLib {
                         // left
                         a.position.x = clamp<float>(a.position.x, 0, (float)b.position.x - b.size.x);
                     }
-                }
-                else if (abs(amin.x - bmin.x) < abs(amin.y - bmin.y)) {
+                } else if (abs(amin.x - bmin.x) < abs(amin.y - bmin.y)) {
                     if (amin.y >= bmin.y) {
                         a.position.y = clamp<float>(a.position.y, (float)bmax.y, (float)a.position.y + b.position.y);
-                    }
-                    else if (amax.y <= bmax.y) {
+                    } else if (amax.y <= bmax.y) {
                         a.position.y = clamp<float>(a.position.y, 0, (float)b.position.y - b.size.y);
                     }
-				}
-			}
+                }
+            }
         }
         return overlapX && overlapY && overlapZ;
     }
