@@ -30,6 +30,14 @@ namespace GameLib {
         bool collideStatic(Actor& a, Actor& b) override;
         bool collideTrigger(Actor& a, Actor& b) override;
     };
+
+	class TraceCurtisDynamicActorComponent : public PhysicsComponent {
+        ~TraceCurtisDynamicActorComponent(){};
+
+        bool collideDynamic(Actor& a, Actor& b) override;
+
+        void update(Actor& a, World& w) override;
+    };
 }
 
 #endif

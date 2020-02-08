@@ -250,7 +250,7 @@ int main(int argc, char** argv) {
     double frames = 0;
     GameLib::Actor player(new GameLib::SimpleInputComponent(),
                           new GameLib::DungeonActorComponent(),
-                          new GameLib::SimplePhysicsComponent(),
+                          new GameLib::TraceCurtisDynamicActorComponent(),
                           new GameLib::SimpleGraphicsComponent());
     player.speed = (float)graphics.getTileSizeX();
     player.position.x = graphics.getCenterX() / (float)graphics.getTileSizeX();
@@ -262,13 +262,13 @@ int main(int argc, char** argv) {
 
     world.addDynamicActor(&player);
 
-    GameLib::Actor randomPlayer(new GameLib::RandomInputComponent(),
+    GameLib::Actor randomPlayer(nullptr,
                                 new GameLib::ActorComponent(),
                                 new GameLib::SimplePhysicsComponent(),
                                 new GameLib::SimpleGraphicsComponent());
 
     world.addDynamicActor(&randomPlayer);
-    randomPlayer.position.x = graphics.getCenterX() / (float)graphics.getTileSizeX();
+    randomPlayer.position.x = graphics.getCenterX() / (float)graphics.getTileSizeX() +3;
     randomPlayer.position.y = graphics.getCenterY() / (float)graphics.getTileSizeY();
     randomPlayer.spriteId = 1;
     randomPlayer.speed = (float)graphics.getTileSizeX();
