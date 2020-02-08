@@ -97,7 +97,7 @@ namespace GameLib {
             }
         }
 
-		// calculates the width of the string text
+        // calculates the width of the string text
         int calcWidth(const char* text) {
             int w{ 0 };
             if (font_)
@@ -105,12 +105,12 @@ namespace GameLib {
             return w;
         }
 
-		// calculates the height of the loaded font
+        // calculates the height of the loaded font
         int calcHeight() const { return TTF_FontHeight(font_); }
 
-		// returns the height of the rendered string
-		int height() const { return rect_.h; }
-		// returns the width of the renderered string
+        // returns the height of the rendered string
+        int height() const { return rect_.h; }
+        // returns the width of the renderered string
         int width() const { return rect_.w; }
 
         void draw(int x, int y);
@@ -126,7 +126,7 @@ namespace GameLib {
                 y -= calcHeight() >> 1;
             } else if (flags & VALIGN_BOTTOM) {
                 y -= calcHeight();
-			}
+            }
             if (flags & SHADOWED) {
                 render(text, Black);
                 draw(x + 2, y + 2);
@@ -250,7 +250,7 @@ int main(int argc, char** argv) {
     double frames = 0;
     GameLib::Actor player(new GameLib::SimpleInputComponent(),
                           new GameLib::DungeonActorComponent(),
-                          new GameLib::TraceCurtisDynamicActorComponent(),
+                          new GameLib::SimplePhysicsComponent(),
                           new GameLib::SimpleGraphicsComponent());
     player.speed = (float)graphics.getTileSizeX();
     player.position.x = graphics.getCenterX() / (float)graphics.getTileSizeX();
@@ -262,19 +262,20 @@ int main(int argc, char** argv) {
 
     world.addDynamicActor(&player);
 
-    GameLib::Actor randomPlayer(nullptr,
+    GameLib::Actor randomPlayer(new GameLib::RandomInputComponent(),
                                 new GameLib::ActorComponent(),
-                                new GameLib::SimplePhysicsComponent(),
+                                new GameLib::TraceCurtisDynamicActorComponent(),
                                 new GameLib::SimpleGraphicsComponent());
 
     world.addDynamicActor(&randomPlayer);
-    randomPlayer.position.x = graphics.getCenterX() / (float)graphics.getTileSizeX() +3;
+    randomPlayer.position.x = graphics.getCenterX() / (float)graphics.getTileSizeX() + 3;
     randomPlayer.position.y = graphics.getCenterY() / (float)graphics.getTileSizeY();
     randomPlayer.spriteId = 1;
     randomPlayer.speed = (float)graphics.getTileSizeX();
 
     float t0 = stopwatch.Stop_sf();
-
+    float lag = 0.0f;
+    constexpr float MS_PER_UPDATE = 0.001f;
     while (!context.quitRequested) {
         float t1 = stopwatch.Stop_sf();
         float dt = t1 - t0;
@@ -282,6 +283,7 @@ int main(int argc, char** argv) {
         GameLib::Context::deltaTime = dt;
         GameLib::Context::currentTime_s = t1;
         GameLib::Context::currentTime_ms = t1 * 1000;
+        lag += dt;
 
         context.getEvents();
         input.handle();
@@ -297,8 +299,11 @@ int main(int argc, char** argv) {
             }
         }
 
-        world.update(dt);
-        world.physics(dt);
+        while (lag >= MS_PER_UPDATE) {
+            world.update(MS_PER_UPDATE);
+            world.physics(MS_PER_UPDATE);
+            lag -= MS_PER_UPDATE;
+        }
         world.draw(graphics);
 
         minchofont.draw(0, 0, "Hello, world!", GameLib::Red, GameLib::Font::SHADOWED);
@@ -310,7 +315,15 @@ int main(int argc, char** argv) {
         SDL_Color c = GameLib::MakeColorHI(7, 4, s, false);
         gothicfont.draw(x, y, "Runner", c, GameLib::Font::SHADOWED | GameLib::Font::HALIGN_CENTER | GameLib::Font::VALIGN_CENTER);
 
-		minchofont.draw(0, (int)graphics.getHeight()-2, "HP: 56", GameLib::Gold, GameLib::Font::VALIGN_BOTTOM | GameLib::Font::SHADOWED);
+        minchofont.draw(0, (int)graphics.getHeight() - 2, "HP: 56", GameLib::Gold, GameLib::Font::VALIGN_BOTTOM | GameLib::Font::SHADOWED);
+
+        char fpsstr[64] = { 0 };
+        snprintf(fpsstr, 64, "%3.2f", 1.0f / dt);
+        minchofont.draw((int)graphics.getWidth(),
+                        (int)graphics.getHeight() - 2,
+                        fpsstr,
+                        GameLib::Gold,
+                        GameLib::Font::HALIGN_RIGHT | GameLib::Font::VALIGN_BOTTOM | GameLib::Font::SHADOWED);
 
         context.swapBuffers();
         frames++;
