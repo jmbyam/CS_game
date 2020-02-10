@@ -250,10 +250,10 @@ int main(int argc, char** argv) {
     double frames = 0;
     GameLib::Actor player(new GameLib::SimpleInputComponent(),
                           new GameLib::DungeonActorComponent(),
-                          new GameLib::SimplePhysicsComponent(),
+                          new GameLib::DainNickJosephWorldPhysicsComponent(),
                           new GameLib::SimpleGraphicsComponent());
     player.speed = (float)graphics.getTileSizeX();
-    player.position.x = graphics.getCenterX() / (float)graphics.getTileSizeX();
+    player.position.x = graphics.getCenterX() / (float)graphics.getTileSizeX() - 6;
     player.position.y = graphics.getCenterY() / (float)graphics.getTileSizeY();
     player.spriteId = 2;
 
@@ -262,16 +262,38 @@ int main(int argc, char** argv) {
 
     world.addDynamicActor(&player);
 
-    GameLib::Actor randomPlayer(new GameLib::RandomInputComponent(),
-                                new GameLib::ActorComponent(),
-                                new GameLib::TraceCurtisDynamicActorComponent(),
-                                new GameLib::SimpleGraphicsComponent());
+    GameLib::Actor randomPlayer1(new GameLib::RandomInputComponent(),
+                                 new GameLib::ActorComponent(),
+                                 new GameLib::TraceCurtisDynamicActorComponent(),
+                                 new GameLib::SimpleGraphicsComponent());
 
-    world.addDynamicActor(&randomPlayer);
-    randomPlayer.position.x = graphics.getCenterX() / (float)graphics.getTileSizeX() + 3;
-    randomPlayer.position.y = graphics.getCenterY() / (float)graphics.getTileSizeY();
-    randomPlayer.spriteId = 1;
-    randomPlayer.speed = (float)graphics.getTileSizeX();
+    world.addDynamicActor(&randomPlayer1);
+    randomPlayer1.position.x = graphics.getCenterX() / (float)graphics.getTileSizeX() + 3;
+    randomPlayer1.position.y = graphics.getCenterY() / (float)graphics.getTileSizeY();
+    randomPlayer1.spriteId = 1;
+    randomPlayer1.speed = (float)graphics.getTileSizeX();
+
+    GameLib::Actor randomPlayer2(new GameLib::RandomInputComponent(),
+                                 new GameLib::ActorComponent(),
+                                 new GameLib::DainNickJosephWorldPhysicsComponent(),
+                                 new GameLib::SimpleGraphicsComponent());
+
+    world.addDynamicActor(&randomPlayer2);
+    randomPlayer2.position.x = graphics.getCenterX() / (float)graphics.getTileSizeX() + 6;
+    randomPlayer2.position.y = graphics.getCenterY() / (float)graphics.getTileSizeY();
+    randomPlayer2.spriteId = 3;
+    randomPlayer2.speed = (float)graphics.getTileSizeX();
+
+	GameLib::Actor randomPlayer3(new GameLib::RandomInputComponent(),
+								 new GameLib::ActorComponent(),
+								 new GameLib::SimplePhysicsComponent(),
+								 new GameLib::SimpleGraphicsComponent());
+
+    world.addDynamicActor(&randomPlayer3);
+    randomPlayer3.position.x = graphics.getCenterX() / (float)graphics.getTileSizeX() + 6;
+    randomPlayer3.position.y = graphics.getCenterY() / (float)graphics.getTileSizeY();
+    randomPlayer3.spriteId = 4;
+    randomPlayer3.speed = (float)graphics.getTileSizeX();
 
     float t0 = stopwatch.Stop_sf();
     float lag = 0.0f;
@@ -310,10 +332,10 @@ int main(int argc, char** argv) {
         gothicfont.draw((int)graphics.getWidth(), 0, "Hello, world!", GameLib::Blue, GameLib::Font::HALIGN_RIGHT | GameLib::Font::SHADOWED);
 
         int x = (int)graphics.getCenterX();
-        int y = (int)graphics.getCenterY();
+        int y = (int)graphics.getCenterY() >> 1;
         float s = GameLib::wave(t1, 1.0f);
         SDL_Color c = GameLib::MakeColorHI(7, 4, s, false);
-        gothicfont.draw(x, y, "Runner", c, GameLib::Font::SHADOWED | GameLib::Font::HALIGN_CENTER | GameLib::Font::VALIGN_CENTER);
+        gothicfont.draw(x, y, "Collisions", c, GameLib::Font::SHADOWED | GameLib::Font::HALIGN_CENTER | GameLib::Font::VALIGN_CENTER);
 
         minchofont.draw(0, (int)graphics.getHeight() - 2, "HP: 56", GameLib::Gold, GameLib::Font::VALIGN_BOTTOM | GameLib::Font::SHADOWED);
 
