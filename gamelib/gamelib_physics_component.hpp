@@ -38,6 +38,14 @@ namespace GameLib {
 
         void update(Actor& a, World& w) override;
     };
+
+    class DainNickJosephWorldPhysicsComponent: public PhysicsComponent {
+        ~DainNickJosephWorldPhysicsComponent(){};
+
+        bool collideWorld(Actor& actor, World& world) override;
+
+        void update(Actor& a, World& w) override;
+    };
 }
 
 #endif

@@ -74,4 +74,40 @@ namespace GameLib {
             a.position.y = clamp<float>(a.position.y, 0, (float)w.worldSizeY - a.size.y);
         }
     }
+
+    bool GameLib::DainNickJosephWorldPhysicsComponent::collideWorld(Actor& a, World& w) {
+        
+        float subTileSize=1.0;
+        for (float x=floor(a.position.x); x<ceil(a.position.x+a.size.x); x+=subTileSize)
+        {
+            if(w.getTile(x,floor(a.position.y)).flags==1)
+            {
+                return true;
+            }
+            if(w.getTile(x,ceil(a.position.y+a.size.y)-subTileSize).flags==1)
+            {
+                return true;
+            }
+        }
+        for (float y=floor(a.position.y); y<ceil(a.position.y+a.size.y); y+=subTileSize)
+        {
+            if(w.getTile(floor(a.position.x),y).flags==1)
+            {
+                return true;
+            }
+            if(w.getTile(ceil(a.position.x+a.size.x)-subTileSize,y).flags==1)
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    void GameLib::DainNickJosephWorldPhysicsComponent::update(Actor& a, World& w) {
+        a.position += a.dt * a.speed * a.velocity;
+        if (a.clipToWorld) {
+            a.position.x = clamp<float>(a.position.x, 0, (float)w.worldSizeX - a.size.x);
+            a.position.y = clamp<float>(a.position.y, 0, (float)w.worldSizeY - a.size.y);
+        }
+    }
 }
