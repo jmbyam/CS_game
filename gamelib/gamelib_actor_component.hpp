@@ -30,6 +30,11 @@ namespace GameLib {
         virtual ~RandomActorComponent() {}
         void update(Actor& actor, World& world) override;
     };
+
+    class DainNickJosephWorldCollidingActorComponent : public ActorComponent {
+        virtual ~DainNickJosephWorldCollidingActorComponent() {}
+        void handleCollisionWorld(Actor& actor, World& world) override;
+    };
 }
 
 #endif

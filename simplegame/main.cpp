@@ -249,7 +249,7 @@ int main(int argc, char** argv) {
     double spritesDrawn = 0;
     double frames = 0;
     GameLib::Actor player(new GameLib::SimpleInputComponent(),
-                          new GameLib::DungeonActorComponent(),
+                          new GameLib::DainNickJosephWorldCollidingActorComponent(),
                           new GameLib::DainNickJosephWorldPhysicsComponent(),
                           new GameLib::SimpleGraphicsComponent());
     player.speed = (float)graphics.getTileSizeX();
