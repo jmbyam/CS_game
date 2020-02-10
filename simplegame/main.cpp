@@ -256,6 +256,7 @@ int main(int argc, char** argv) {
     player.position.x = graphics.getCenterX() / (float)graphics.getTileSizeX() - 6;
     player.position.y = graphics.getCenterY() / (float)graphics.getTileSizeY();
     player.spriteId = 2;
+    player.speed = 4.0f;
 
     // GameLib::MoveAction moveAction;
     // moveAction.setActor(&player);
