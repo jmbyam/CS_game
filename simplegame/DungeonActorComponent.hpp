@@ -15,6 +15,14 @@ namespace GameLib {
 		void handleCollisionWorld(Actor& actor, World& world) override;
 		void beginOverlap(Actor& a, Actor& b) override;
 		void endOverlap(Actor& a, Actor& b) override;
+
+	private:
+		struct STATICINFO {
+			bool horizontal{false};
+			float movement{2.0f};
+			glm::vec3 position;
+			float t{0.0f};
+		} staticInfo;
 	};
 } // namespace GameLib
 #endif

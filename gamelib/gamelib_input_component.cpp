@@ -14,7 +14,7 @@ namespace GameLib {
     }
 
     void RandomInputComponent::update(Actor& actor) {
-        if (count++ > 5) {
+        if (count++ > 1200) {
             count = 0;
         } else {
             return;

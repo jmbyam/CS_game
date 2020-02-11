@@ -84,6 +84,8 @@ namespace GameLib {
 		static constexpr int VALIGN_CENTER = 1 << 3;
 		static constexpr int VALIGN_BOTTOM = 1 << 4;
 		static constexpr int SHADOWED = 1 << 5;
+		static constexpr int BOLD = 1 << 6;
+		static constexpr int ITALIC = 1 << 7;
 
 		Font(Context* context) : context_(context) {}
 		~Font();
@@ -139,6 +141,17 @@ namespace GameLib {
 			} else if (flags & VALIGN_BOTTOM) {
 				y -= calcHeight();
 			}
+
+			int style = TTF_STYLE_NORMAL;
+			if (flags & BOLD) {
+				style |= TTF_STYLE_BOLD;
+			}
+			if (flags & ITALIC) {
+				style |= TTF_STYLE_ITALIC;
+			}
+			TTF_SetFontStyle(font_, style);
+
+
 			if (flags & SHADOWED) {
 				render(text, Black);
 				draw(x + 2, y + 2);
@@ -153,6 +166,7 @@ namespace GameLib {
 		SDL_Texture* texture_{nullptr};
 		SDL_Surface* surface_{nullptr};
 		SDL_Rect rect_;
+		int style_ = TTF_STYLE_NORMAL;
 	};
 
 	Font::~Font() {
@@ -302,6 +316,12 @@ int main(int argc, char** argv) {
 	actor = MakeActor(cx + 6, cy + 4, 4, 32, nullptr, NewDungeonActor(), NewPhysics(), NewGraphics());
 	world.addStaticActor(actor);
 
+	actor = MakeActor(cx + 10, cy - 4, 4, 32, nullptr, NewDungeonActor(), NewPhysics(), NewGraphics());
+	world.addStaticActor(actor);
+
+	actor = MakeActor(16, 6, 4, 100, NewRandomInput(), NewDungeonActor(), NewPhysics(), NewGraphics());
+	world.addDynamicActor(actor);
+
 	actor = MakeActor(6, 6, 4, 101, NewRandomInput(), NewDungeonActor(), NewPhysics(), NewGraphics());
 	world.addDynamicActor(actor);
 
@@ -309,38 +329,39 @@ int main(int argc, char** argv) {
 	world.addTriggerActor(actor);
 
 	//// Some extras
-	//GameLib::Actor randomPlayer1(new GameLib::RandomInputComponent(), new GameLib::DungeonActorComponent(),
+	// GameLib::Actor randomPlayer1(new GameLib::RandomInputComponent(), new GameLib::DungeonActorComponent(),
 	//							 new GameLib::TraceCurtisDynamicActorComponent(),
 	//							 new GameLib::SimpleGraphicsComponent());
 
-	//world.addDynamicActor(&randomPlayer1);
-	//randomPlayer1.position.x = graphics.getCenterX() / (float)graphics.getTileSizeX() - 3;
-	//randomPlayer1.position.y = graphics.getCenterY() / (float)graphics.getTileSizeY();
-	//randomPlayer1.spriteId = 1;
-	//randomPlayer1.speed = (float)graphics.getTileSizeX();
+	// world.addDynamicActor(&randomPlayer1);
+	// randomPlayer1.position.x = graphics.getCenterX() / (float)graphics.getTileSizeX() - 3;
+	// randomPlayer1.position.y = graphics.getCenterY() / (float)graphics.getTileSizeY();
+	// randomPlayer1.spriteId = 1;
+	// randomPlayer1.speed = (float)graphics.getTileSizeX();
 
-	//GameLib::Actor randomPlayer2(
+	// GameLib::Actor randomPlayer2(
 	//	new GameLib::RandomInputComponent(), new GameLib::DainNickJosephWorldCollidingActorComponent(),
 	//	new GameLib::DainNickJosephWorldPhysicsComponent(), new GameLib::SimpleGraphicsComponent());
 
-	//world.addDynamicActor(&randomPlayer2);
-	//randomPlayer2.position.x = graphics.getCenterX() / (float)graphics.getTileSizeX() - 6;
-	//randomPlayer2.position.y = graphics.getCenterY() / (float)graphics.getTileSizeY();
-	//randomPlayer2.spriteId = 3;
-	//randomPlayer2.speed = (float)graphics.getTileSizeX();
+	// world.addDynamicActor(&randomPlayer2);
+	// randomPlayer2.position.x = graphics.getCenterX() / (float)graphics.getTileSizeX() - 6;
+	// randomPlayer2.position.y = graphics.getCenterY() / (float)graphics.getTileSizeY();
+	// randomPlayer2.spriteId = 3;
+	// randomPlayer2.speed = (float)graphics.getTileSizeX();
 
-	//GameLib::Actor randomPlayer3(new GameLib::RandomInputComponent(), new GameLib::ActorComponent(),
+	// GameLib::Actor randomPlayer3(new GameLib::RandomInputComponent(), new GameLib::ActorComponent(),
 	//							 new GameLib::SimplePhysicsComponent(), new GameLib::SimpleGraphicsComponent());
 
-	//world.addDynamicActor(&randomPlayer3);
-	//randomPlayer3.position.x = graphics.getCenterX() / (float)graphics.getTileSizeX() - 6;
-	//randomPlayer3.position.y = graphics.getCenterY() / (float)graphics.getTileSizeY() - 3;
-	//randomPlayer3.spriteId = 4;
-	//randomPlayer3.speed = (float)graphics.getTileSizeX();
+	// world.addDynamicActor(&randomPlayer3);
+	// randomPlayer3.position.x = graphics.getCenterX() / (float)graphics.getTileSizeX() - 6;
+	// randomPlayer3.position.y = graphics.getCenterY() / (float)graphics.getTileSizeY() - 3;
+	// randomPlayer3.spriteId = 4;
+	// randomPlayer3.speed = (float)graphics.getTileSizeX();
 
 	float t0 = stopwatch.Stop_sf();
 	float lag = 0.0f;
 	constexpr float MS_PER_UPDATE = 0.001f;
+	world.start();
 	while (!context.quitRequested) {
 		float t1 = stopwatch.Stop_sf();
 		float dt = t1 - t0;
@@ -385,8 +406,9 @@ int main(int argc, char** argv) {
 		int y = (int)graphics.getCenterY() >> 1;
 		float s = GameLib::wave(t1, 1.0f);
 		SDL_Color c = GameLib::MakeColorHI(7, 4, s, false);
-		gothicfont.draw(x, y, "Collisions", c,
-						GameLib::Font::SHADOWED | GameLib::Font::HALIGN_CENTER | GameLib::Font::VALIGN_CENTER);
+		minchofont.draw(x, y, "Collisions", c,
+						GameLib::Font::SHADOWED | GameLib::Font::HALIGN_CENTER | GameLib::Font::VALIGN_CENTER |
+							GameLib::Font::BOLD | GameLib::Font::ITALIC);
 
 		minchofont.draw(0, (int)graphics.getHeight() - 2, "HP: 56", GameLib::Gold,
 						GameLib::Font::VALIGN_BOTTOM | GameLib::Font::SHADOWED);

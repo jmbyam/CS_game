@@ -1,5 +1,6 @@
 #include "DungeonActorComponent.hpp"
 #include <gamelib_locator.hpp>
+#include <gamelib_random.hpp>
 #include <limits>
 
 namespace GameLib {
@@ -9,14 +10,63 @@ namespace GameLib {
 
 
 	void DungeonActorComponent::update(Actor& a, World& w) {
-		debugDrawSweptAABB(a);
+		// debugDraw(a);
+		// debugDrawSweptAABB(a);
+		if (a.isStatic()) {
+			staticInfo.t += a.dt;
+			float movement = std::sin(staticInfo.t) * staticInfo.movement;
+			a.position = staticInfo.position;
+			if (staticInfo.horizontal) {
+				a.position.x += movement;
+			} else {
+				a.position.y += movement;
+			}
+		}
 	}
 
 
-	void DungeonActorComponent::beginPlay(Actor& actor) {}
+	void DungeonActorComponent::beginPlay(Actor& a) {
+		if (a.isStatic()) {
+			staticInfo.horizontal = (random.rd() & 1) == 1;
+			staticInfo.movement = random.positive() * 5.0f + 2.0f;
+			staticInfo.position = a.position;
+		}
+	}
 
 
 	void DungeonActorComponent::handleCollisionStatic(Actor& a, Actor& b) {
+		// backup a's position
+		glm::vec3 curPosition = a.position;
+		glm::vec3 curVelocity = a.velocity;
+		a.velocity = a.position - a.lastPosition;
+		a.position = a.lastPosition;
+		glm::vec3 normal;
+		float collisionTime = SweptAABB(a, b, normal);
+		if (collisionTime >= 1.0f) {
+			a.position = curPosition;
+			a.velocity = curVelocity;
+			return;
+		}
+		a.position += a.velocity * collisionTime;
+		float timeLeft = 1.0f - collisionTime;
+		bool deflecting{false};
+		if (deflecting) {
+			a.velocity.x *= timeLeft;
+			a.velocity.y *= timeLeft;
+			if (std::abs(normal.x) > 0.0001f)
+				a.velocity.x = -a.velocity.x;
+			if (std::abs(normal.y) > 0.0001f)
+				a.velocity.y = -a.velocity.y;
+		} else {
+			glm::vec3 tangent = {normal.y, normal.x, 0.0f};
+			float cos_theta = glm::dot(a.velocity, tangent) * timeLeft;
+			a.velocity = cos_theta * tangent;
+		}
+		a.position += a.velocity;
+	}
+
+
+	void DungeonActorComponent::handleCollisionDynamic(Actor& a, Actor& b) {
 		// backup a's position
 		glm::vec3 curPosition = a.position;
 		glm::vec3 curVelocity = a.velocity;
@@ -35,10 +85,12 @@ namespace GameLib {
 		if (deflecting) {
 			a.velocity.x *= timeLeft;
 			a.velocity.y *= timeLeft;
-			if (std::abs(normal.x) > 0.0001f) a.velocity.x = -a.velocity.x;
-			if (std::abs(normal.y) > 0.0001f) a.velocity.y = -a.velocity.y;
+			if (std::abs(normal.x) > 0.0001f)
+				a.velocity.x = -a.velocity.x;
+			if (std::abs(normal.y) > 0.0001f)
+				a.velocity.y = -a.velocity.y;
 		} else {
-			glm::vec3 tangent = { normal.y, normal.x, 0.0f };
+			glm::vec3 tangent = {normal.y, normal.x, 0.0f};
 			float cos_theta = glm::dot(a.velocity, tangent) * timeLeft;
 			a.velocity = cos_theta * tangent;
 		}
@@ -46,11 +98,7 @@ namespace GameLib {
 	}
 
 
-	void DungeonActorComponent::handleCollisionDynamic(Actor& a, Actor& b) {}
-
-
 	void DungeonActorComponent::handleCollisionWorld(Actor& a, World& w) {
-		debugDraw(a);
 		// determine whether to move the player up, or to the left
 		int ix1 = (int)(a.position.x);
 		int iy1 = (int)(a.position.y);
@@ -222,6 +270,8 @@ namespace GameLib {
 
 	void DungeonActorComponent::beginOverlap(Actor& a, Actor& b) {
 		HFLOGDEBUG("Actor '%d' is now overlapping trigger actor '%d'", a.getId(), b.getId());
+		a.position.x = random.positive() * Locator::getWorld()->worldSizeX;
+		a.position.y = random.positive() * Locator::getWorld()->worldSizeY;
 	}
 
 

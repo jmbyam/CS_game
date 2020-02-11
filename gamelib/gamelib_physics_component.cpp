@@ -38,7 +38,7 @@ namespace GameLib {
 		glm::vec3 bp2 = b.position + b.size;
 
 		if (a.velocity.x > 0.0f) {
-			inverseEnter.x = ap1.x - bp2.x;
+			inverseEnter.x = bp1.x - ap2.x;
 			inverseLeave.x = bp2.x - ap1.x;
 		} else {
 			inverseEnter.x = bp2.x - ap1.x;
@@ -88,12 +88,12 @@ namespace GameLib {
 			if (ap2.y < bp1.y || ap1.y > bp2.y)
 				return 1.0f;
 		}
-		if (enter.x > 1.0f || enter.y > 1.0f) {
-			if (enter.x > enter.y) {
-				HFLOGDEBUG("missing a condition?");
-			}
-			return 1.0f;
-		}
+		//if (enter.x > 1.0f || enter.y > 1.0f) {
+		//	if (enter.x > enter.y) {
+		//		HFLOGDEBUG("missing a condition?");
+		//	}
+		//	return 1.0f;
+		//}
 
 		if (enter.x > enter.y) {
 			if (inverseEnter.x < 0.0f) {
