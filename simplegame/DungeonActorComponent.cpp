@@ -4,76 +4,13 @@
 
 namespace GameLib {
 	extern void debugDraw(Actor& a);
+	extern void debugDrawSweptAABB(Actor& a);
+	extern float SweptAABB(Actor& a, Actor& b, glm::vec3& normal);
 
-	float SweptAABB(Actor& a, Actor& b, glm::vec3& normal) {
-		glm::vec3 inverseEnter;
-		glm::vec3 inverseLeave;
-		glm::vec3 ap1 = a.position;
-		glm::vec3 ap2 = a.position + a.size;
-		glm::vec3 bp1 = b.position;
-		glm::vec3 bp2 = b.position + b.size;
 
-		if (a.velocity.x > 0.0f) {
-			inverseEnter.x = ap1.x - bp2.x;
-			inverseLeave.x = bp2.x - ap1.x;
-		} else {
-			inverseEnter.x = bp2.x - ap1.x;
-			inverseLeave.x = bp1.x - ap2.x;
-		}
-
-		if (a.velocity.y > 0.0f) {
-			inverseEnter.y = bp1.y - ap2.y;
-			inverseLeave.y = bp2.y - ap1.y;
-		} else {
-			inverseEnter.y = bp2.y - ap1.y;
-			inverseLeave.y = bp1.y - ap2.y;
-		}
-
-		glm::vec3 enter;
-		glm::vec3 leave;
-		constexpr float inf = std::numeric_limits<float>::infinity();
-
-		if (a.velocity.x == 0.0f) {
-			enter.x = -inf;
-			leave.x = inf;
-		} else {
-			enter.x = inverseEnter.x / a.velocity.x;
-			leave.x = inverseLeave.x / a.velocity.x;
-		}
-
-		if (a.velocity.x == 0.0f) {
-			enter.x = -inf;
-			leave.x = inf;
-		} else {
-			enter.x = inverseEnter.x / a.velocity.x;
-			leave.x = inverseLeave.x / a.velocity.x;
-		}
-
-		float enterTime = std::max(enter.x, leave.x);
-		float leaveTime = std::min(leave.x, leave.y);
-		if (enterTime > leaveTime || enter.x < 0.0f || enter.y < 0.0f || enter.x > 1.0f || enter.y > 1.0f) {
-			normal = {0.0f, 0.0f, 0.0f};
-			return 1.0f;
-		}
-
-		if (enter.x > enter.y) {
-			if (inverseEnter.x < 0.0f) {
-				normal = {1.0f, 0.0f, 0.0f};
-			} else {
-				normal = {-1.0f, 0.0f, 0.0f};
-			}
-		} else {
-			if (inverseEnter.y < 0.0f) {
-				normal = {0.0f, 1.0f, 0.0f};
-			} else {
-				normal = {0.0f, -1.0f, 0.0f};
-			}
-		}
-
-		return enterTime;
+	void DungeonActorComponent::update(Actor& a, World& w) {
+		debugDrawSweptAABB(a);
 	}
-
-	void DungeonActorComponent::update(Actor& actor, World& world) {}
 
 
 	void DungeonActorComponent::beginPlay(Actor& actor) {}
@@ -81,14 +18,20 @@ namespace GameLib {
 
 	void DungeonActorComponent::handleCollisionStatic(Actor& a, Actor& b) {
 		// backup a's position
+		glm::vec3 curPosition = a.position;
+		glm::vec3 curVelocity = a.velocity;
 		a.velocity = a.position - a.lastPosition;
 		a.position = a.lastPosition;
 		glm::vec3 normal;
 		float collisionTime = SweptAABB(a, b, normal);
-		if (collisionTime >= 1.0f) return;
+		if (collisionTime >= 1.0f) {
+			a.position = curPosition;
+			a.velocity = curVelocity;
+			return;
+		}
 		a.position += a.velocity * collisionTime;
 		float timeLeft = 1.0f - collisionTime;
-		bool deflecting{false};
+		bool deflecting{true};
 		if (deflecting) {
 			a.velocity.x *= timeLeft;
 			a.velocity.y *= timeLeft;

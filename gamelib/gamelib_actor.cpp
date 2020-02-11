@@ -41,7 +41,7 @@ namespace GameLib {
 			for (Actor* b : world.staticActors) {
 				if (this == b)
 					continue;
-				if (physics_->collideDynamic(*this, *b))
+				if (physics_->collideStatic(*this, *b))
 					actor_->handleCollisionStatic(*this, *b);
 			}
 

@@ -1,113 +1,222 @@
 #include "pch.h"
 #include "gamelib_physics_component.hpp"
+#include <limits>
 
 namespace GameLib {
+	inline bool AABBcollidesAABB(glm::vec3 amin, glm::vec3 amax, glm::vec3 bmin, glm::vec3 bmax) {
+		bool overlapX = (amin.x <= bmax.x && amax.x >= bmin.x);
+		bool overlapY = (amin.y <= bmax.y && amax.y >= bmin.y);
+		bool overlapZ = (amin.z <= bmax.z && amax.z >= bmin.z);
+		return overlapX && overlapY && overlapZ;
+	}
 
-    void SimplePhysicsComponent::update(Actor& a, World& w) {
-        a.position += a.dt * a.speed * a.velocity;
-        if (a.clipToWorld) {
-            a.position.x = clamp<float>(a.position.x, 0, (float)w.worldSizeX - a.size.x);
-            a.position.y = clamp<float>(a.position.y, 0, (float)w.worldSizeY - a.size.y);
-        }
-    }
+	inline bool BroadPhaseAABB(glm::vec3 ap, glm::vec3 as, glm::vec3 av, glm::vec3 bp, glm::vec3 bs) {
+		glm::vec3 amin;
+		amin.x = av.x > 0 ? ap.x : ap.x + av.x;
+		amin.y = av.y > 0 ? ap.y : ap.y + av.y;
+		amin.z = av.z > 0 ? ap.z : ap.z + av.z;
+		glm::vec3 asize;
+		asize.x = av.x > 0 ? as.x + av.x : as.x - av.x;
+		asize.y = av.y > 0 ? as.y + av.y : as.y - av.y;
+		asize.z = av.z > 0 ? as.z + av.z : as.z - av.z;
+		glm::vec amax = amin + asize;
+		return AABBcollidesAABB(amin, amax, bp, bp + bs);
+	}
 
-    bool SimplePhysicsComponent::collideWorld(Actor& a, World& w) {
-        int aix = (int)a.position.x;
-        int aiy = (int)a.position.y;
-        bool fracX = a.position.x - aix > 0;
-        bool fracY = a.position.y - aiy > 0;
-        if (w.getTile(aix, aiy).flags != 0)
-            return true;
-        if (fracX && w.getTile(aix + 1, aiy).flags != 0)
-            return true;
-        if (fracY && w.getTile(aix, aiy + 1).flags != 0)
-            return true;
-        if (fracX && fracY && w.getTile(aix + 1, aiy + 1).flags != 0)
-            return true;
-        return false;
-    }
+	bool BroadPhaseAABB(Actor& a, Actor& b) {
+		if (BroadPhaseAABB(a.lastPosition, a.size, a.velocity, b.position, b.size))
+			return true;
+		return false;
+	}
 
-    bool SimplePhysicsComponent::collideDynamic(Actor& a, Actor& b) { return collides(a, b); }
+	float SweptAABB(Actor& a, Actor& b, glm::vec3& normal) {
+		glm::vec3 inverseEnter;
+		glm::vec3 inverseLeave;
+		glm::vec3 ap1 = a.position;
+		glm::vec3 ap2 = a.position + a.size;
+		glm::vec3 bp1 = b.position;
+		glm::vec3 bp2 = b.position + b.size;
 
-    bool SimplePhysicsComponent::collideStatic(Actor& a, Actor& b) { return collides(a, b); }
+		if (a.velocity.x > 0.0f) {
+			inverseEnter.x = ap1.x - bp2.x;
+			inverseLeave.x = bp2.x - ap1.x;
+		} else {
+			inverseEnter.x = bp2.x - ap1.x;
+			inverseLeave.x = bp1.x - ap2.x;
+		}
 
-    bool SimplePhysicsComponent::collideTrigger(Actor& a, Actor& b) { return collides(a, b); }
+		if (a.velocity.y > 0.0f) {
+			inverseEnter.y = bp1.y - ap2.y;
+			inverseLeave.y = bp2.y - ap1.y;
+		} else {
+			inverseEnter.y = bp2.y - ap1.y;
+			inverseLeave.y = bp1.y - ap2.y;
+		}
 
-    bool GameLib::TraceCurtisDynamicActorComponent::collideDynamic(Actor& a, Actor& b) {
-        glm::vec3 amin = a.position;
-        glm::vec3 amax = a.position + a.size;
-        glm::vec3 bmin = b.position;
-        glm::vec3 bmax = b.position + b.size;
+		glm::vec3 enter;
+		glm::vec3 leave;
+		constexpr float inf = std::numeric_limits<float>::infinity();
 
-        bool overlapX = (amin.x <= bmax.x && amax.x >= bmin.x);
-        bool overlapY = (amin.y <= bmax.y && amax.y >= bmin.y);
-        bool overlapZ = (amin.z <= bmax.z && amax.z >= bmin.z);
-        if (a.getId() != b.getId()) {
-            if (overlapX && overlapY && overlapZ) {
-                if (abs(amin.x - bmin.x) > abs(amin.y - bmin.y)) {
-                    if (amin.x >= bmin.x) {
-                        // moveX
-                        // a.position.x += 1;
-                        // right
-                        a.position.x = clamp<float>(a.position.x, (float)bmax.x, (float)a.position.x + b.position.x);
-                    } else if (amax.x <= bmax.x) {
-                        // a.position.x -= 1;
-                        // left
-                        a.position.x = clamp<float>(a.position.x, 0, (float)b.position.x - b.size.x);
-                    }
-                } else if (abs(amin.x - bmin.x) < abs(amin.y - bmin.y)) {
-                    if (amin.y >= bmin.y) {
-                        a.position.y = clamp<float>(a.position.y, (float)bmax.y, (float)a.position.y + b.position.y);
-                    } else if (amax.y <= bmax.y) {
-                        a.position.y = clamp<float>(a.position.y, 0, (float)b.position.y - b.size.y);
-                    }
-                }
-            }
-        }
-        return overlapX && overlapY && overlapZ;
-    }
+		if (a.velocity.x == 0.0f) {
+			enter.x = -inf;
+			leave.x = inf;
+		} else {
+			enter.x = inverseEnter.x / a.velocity.x;
+			leave.x = inverseLeave.x / a.velocity.x;
+		}
 
-    void GameLib::TraceCurtisDynamicActorComponent::update(Actor& a, World& w) {
-        a.position += a.dt * a.speed * a.velocity;
-        if (a.clipToWorld) {
-            a.position.x = clamp<float>(a.position.x, 0, (float)w.worldSizeX - a.size.x);
-            a.position.y = clamp<float>(a.position.y, 0, (float)w.worldSizeY - a.size.y);
-        }
-    }
+		if (a.velocity.y == 0.0f) {
+			enter.y = -inf;
+			leave.y = inf;
+		} else {
+			enter.y = inverseEnter.y / a.velocity.y;
+			leave.y = inverseLeave.y / a.velocity.y;
+		}
 
-    bool GameLib::DainNickJosephWorldPhysicsComponent::collideWorld(Actor& a, World& w) {
-        
-        float subTileSize=1.0;
-        for (float x=floor(a.position.x); x<ceil(a.position.x+a.size.x); x+=subTileSize)
-        {
-            if(w.getTile(x,floor(a.position.y)).flags==1)
-            {
-                return true;
-            }
-            if(w.getTile(x,ceil(a.position.y+a.size.y)-subTileSize).flags==1)
-            {
-                return true;
-            }
-        }
-        for (float y=floor(a.position.y); y<ceil(a.position.y+a.size.y); y+=subTileSize)
-        {
-            if(w.getTile(floor(a.position.x),y).flags==1)
-            {
-                return true;
-            }
-            if(w.getTile(ceil(a.position.x+a.size.x)-subTileSize,y).flags==1)
-            {
-                return true;
-            }
-        }
-        return false;
-    }
+		float enterTime = std::max(enter.x, enter.y);
+		float leaveTime = std::min(leave.x, leave.y);
+		normal = {0.0f, 0.0f, 0.0f};
+		if (enterTime > leaveTime)
+			return 1.0f;
+		if (enter.x < 0.0f && enter.y < 0.0f)
+			return 1.0f;
+		if (enter.x < 0.0f) {
+			if (ap2.x < bp1.x || ap1.x > bp2.x)
+				return 1.0f;
+		}
+		if (enter.y < 0.0f) {
+			if (ap2.y < bp1.y || ap1.y > bp2.y)
+				return 1.0f;
+		}
+		if (enter.x > 1.0f || enter.y > 1.0f) {
+			if (enter.x > enter.y) {
+				HFLOGDEBUG("missing a condition?");
+			}
+			return 1.0f;
+		}
 
-    void GameLib::DainNickJosephWorldPhysicsComponent::update(Actor& a, World& w) {
-        a.position += a.dt * a.speed * a.velocity;
-        if (a.clipToWorld) {
-            a.position.x = clamp<float>(a.position.x, 0, (float)w.worldSizeX - a.size.x);
-            a.position.y = clamp<float>(a.position.y, 0, (float)w.worldSizeY - a.size.y);
-        }
-    }
-}
+		if (enter.x > enter.y) {
+			if (inverseEnter.x < 0.0f) {
+				normal = {1.0f, 0.0f, 0.0f};
+			} else {
+				normal = {-1.0f, 0.0f, 0.0f};
+			}
+		} else {
+			if (inverseEnter.y < 0.0f) {
+				normal = {0.0f, 1.0f, 0.0f};
+			} else {
+				normal = {0.0f, -1.0f, 0.0f};
+			}
+		}
+
+		return enterTime;
+	}
+
+	void SimplePhysicsComponent::update(Actor& a, World& w) {
+		a.position += a.dt * a.speed * a.velocity;
+		if (a.clipToWorld) {
+			a.position.x = clamp<float>(a.position.x, 0, (float)w.worldSizeX - a.size.x);
+			a.position.y = clamp<float>(a.position.y, 0, (float)w.worldSizeY - a.size.y);
+		}
+	}
+
+	bool SimplePhysicsComponent::collideWorld(Actor& a, World& w) {
+		int aix = (int)a.position.x;
+		int aiy = (int)a.position.y;
+		bool fracX = a.position.x - aix > 0;
+		bool fracY = a.position.y - aiy > 0;
+		if (w.getTile(aix, aiy).flags != 0)
+			return true;
+		if (fracX && w.getTile(aix + 1, aiy).flags != 0)
+			return true;
+		if (fracY && w.getTile(aix, aiy + 1).flags != 0)
+			return true;
+		if (fracX && fracY && w.getTile(aix + 1, aiy + 1).flags != 0)
+			return true;
+		return false;
+	}
+
+	bool SimplePhysicsComponent::collideDynamic(Actor& a, Actor& b) {
+		return collides(a, b);
+	}
+
+	bool SimplePhysicsComponent::collideStatic(Actor& a, Actor& b) {
+		return BroadPhaseAABB(a, b); // collides(a, b);
+	}
+
+	bool SimplePhysicsComponent::collideTrigger(Actor& a, Actor& b) {
+		return collides(a, b);
+	}
+
+	bool GameLib::TraceCurtisDynamicActorComponent::collideDynamic(Actor& a, Actor& b) {
+		glm::vec3 amin = a.position;
+		glm::vec3 amax = a.position + a.size;
+		glm::vec3 bmin = b.position;
+		glm::vec3 bmax = b.position + b.size;
+
+		bool overlapX = (amin.x <= bmax.x && amax.x >= bmin.x);
+		bool overlapY = (amin.y <= bmax.y && amax.y >= bmin.y);
+		bool overlapZ = (amin.z <= bmax.z && amax.z >= bmin.z);
+		if (a.getId() != b.getId()) {
+			if (overlapX && overlapY && overlapZ) {
+				if (abs(amin.x - bmin.x) > abs(amin.y - bmin.y)) {
+					if (amin.x >= bmin.x) {
+						// moveX
+						// a.position.x += 1;
+						// right
+						a.position.x = clamp<float>(a.position.x, (float)bmax.x, (float)a.position.x + b.position.x);
+					} else if (amax.x <= bmax.x) {
+						// a.position.x -= 1;
+						// left
+						a.position.x = clamp<float>(a.position.x, 0, (float)b.position.x - b.size.x);
+					}
+				} else if (abs(amin.x - bmin.x) < abs(amin.y - bmin.y)) {
+					if (amin.y >= bmin.y) {
+						a.position.y = clamp<float>(a.position.y, (float)bmax.y, (float)a.position.y + b.position.y);
+					} else if (amax.y <= bmax.y) {
+						a.position.y = clamp<float>(a.position.y, 0, (float)b.position.y - b.size.y);
+					}
+				}
+			}
+		}
+		return overlapX && overlapY && overlapZ;
+	}
+
+	void GameLib::TraceCurtisDynamicActorComponent::update(Actor& a, World& w) {
+		a.position += a.dt * a.speed * a.velocity;
+		if (a.clipToWorld) {
+			a.position.x = clamp<float>(a.position.x, 0, (float)w.worldSizeX - a.size.x);
+			a.position.y = clamp<float>(a.position.y, 0, (float)w.worldSizeY - a.size.y);
+		}
+	}
+
+	bool GameLib::DainNickJosephWorldPhysicsComponent::collideWorld(Actor& a, World& w) {
+
+		float subTileSize = 1.0;
+		for (float x = floor(a.position.x); x < ceil(a.position.x + a.size.x); x += subTileSize) {
+			if (w.getTile(x, floor(a.position.y)).flags == 1) {
+				return true;
+			}
+			if (w.getTile(x, ceil(a.position.y + a.size.y) - subTileSize).flags == 1) {
+				return true;
+			}
+		}
+		for (float y = floor(a.position.y); y < ceil(a.position.y + a.size.y); y += subTileSize) {
+			if (w.getTile(floor(a.position.x), y).flags == 1) {
+				return true;
+			}
+			if (w.getTile(ceil(a.position.x + a.size.x) - subTileSize, y).flags == 1) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	void GameLib::DainNickJosephWorldPhysicsComponent::update(Actor& a, World& w) {
+		a.position += a.dt * a.speed * a.velocity;
+		if (a.clipToWorld) {
+			a.position.x = clamp<float>(a.position.x, 0, (float)w.worldSizeX - a.size.x);
+			a.position.y = clamp<float>(a.position.y, 0, (float)w.worldSizeY - a.size.y);
+		}
+	}
+} // namespace GameLib
