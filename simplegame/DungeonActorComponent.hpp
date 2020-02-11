@@ -4,11 +4,17 @@
 #include <gamelib_actor_component.hpp>
 
 namespace GameLib {
-    class DungeonActorComponent : public ActorComponent {
-    public:
-        virtual ~DungeonActorComponent() {}
+	class DungeonActorComponent : public ActorComponent {
+	public:
+		virtual ~DungeonActorComponent() {}
 
-        void handleCollisionWorld(Actor& a, World& w) override;
-    };
-}
+		void update(Actor& actor, World& world) override;
+		void beginPlay(Actor& actor) override;
+		void handleCollisionStatic(Actor& a, Actor& b) override;
+		void handleCollisionDynamic(Actor& a, Actor& b) override;
+		void handleCollisionWorld(Actor& actor, World& world) override;
+		void beginOverlap(Actor& a, Actor& b) override;
+		void endOverlap(Actor& a, Actor& b) override;
+	};
+} // namespace GameLib
 #endif

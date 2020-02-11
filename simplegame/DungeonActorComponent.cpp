@@ -1,118 +1,288 @@
 #include "DungeonActorComponent.hpp"
+#include <gamelib_locator.hpp>
+#include <limits>
 
 namespace GameLib {
-    void DungeonActorComponent::handleCollisionWorld(Actor& a, World& w) {
-        // determine whether to move the player up, or to the left
-        int ix = (int)(a.position.x);
-        int iy = (int)(a.position.y);
-        float fx = a.position.x - ix;
-        float fy = a.position.y - iy;
-        float gx = 1 - fx;
-        float gy = 1 - fy;
+	extern void debugDraw(Actor& a);
 
-        bool tl = w.getTile(ix, iy).flags;
-        bool tr = w.getTile(ix + 1, iy).flags;
-        bool bl = w.getTile(ix, iy + 1).flags;
-        bool br = w.getTile(ix + 1, iy + 1).flags;
-        int collision = 0;
-        collision |= tl ? 1 : 0;
-        collision |= tr ? 2 : 0;
-        collision |= bl ? 4 : 0;
-        collision |= br ? 8 : 0;
-        float x1 = ix;
-        float x2 = ix + 1.0f;
-        float y1 = iy;
-        float y2 = iy + 1.0f;
-        switch (collision) {
-        case 0: // no collision
-            break;
-        case 1: // top left single block
-            if (fy < fx)
-                a.position.x = x2;
-            else
-                a.position.y = y2;
-            break;
-        case 2: // top right single block
-            if (fy < 0.99f)
-                a.position.x = x1;
-            else
-                a.position.y = y2;
-            break;
-        case 3: // top wall
-            a.position.y = y2;
-            break;
-        case 4: // bottom left single block
-            if (fx > 0.99f)
-                a.position.x = x2;
-            else
-                a.position.y = y1;
-            break;
-        case 5: // left wall
-            a.position.x = x2;
-            break;
-        case 6: // 
-            if (fy < 0.5f)
-                a.position.x = x1;
-            if (fy < 0.5f && fy < 1.0f)
-                a.position.y = y1;
-            if (fy > 0.5f)
-                a.position.x = x2;
-            if (fy > 0.5f && fx > 0.0f)
-                a.position.y = y2;
-            break;
-        case 7: // top left wall
-            a.position.x = x2;
-            a.position.y = y2;
-            break;
-        case 8: // bottom right single block
-            if (fy > fx)
-                a.position.x = x1;
-            else
-                a.position.y = y1;
-            break;
-        case 9:
-            if (fx < 0.5f)
-                a.position.x = x1;
-            if (fx < 0.5f && fy < 1.0f)
-                a.position.y = y2;
-            if (fx > 0.5f)
-                a.position.x = x2;
-            if (fx > 0.5f && fy > 0.0f)
-                a.position.y = y1;
-            break;
-        case 10: // right wall
-            a.position.x = x1;
-            break;
-        case 11: // top right wall
-            a.position.x = x1;
-            a.position.y = y2;
-            break;
-        case 12: // bottom wall
-            a.position.y = y1;
-            break;
-        case 13: // bottom left wall
-            a.position.x = x2;
-            a.position.y = y1;
-            break;
-        case 14: // bottom right wall
-            a.position.x = x1;
-            a.position.y = y1;
-            break;
-        case 15:
-            break;
-        }
-        // if (tr && !tl && fx < 0.5)
-        //    a.position.x = ix;
-        // if (tl && !tr && fx > 0.5)
-        //    a.position.x = ix + 1;
+	float SweptAABB(Actor& a, Actor& b, glm::vec3& normal) {
+		glm::vec3 inverseEnter;
+		glm::vec3 inverseLeave;
+		glm::vec3 ap1 = a.position;
+		glm::vec3 ap2 = a.position + a.size;
+		glm::vec3 bp1 = b.position;
+		glm::vec3 bp2 = b.position + b.size;
 
-        // if (down && !bl && fy < 0.5)
-        //    a.position.y = iy;
-        // if (bl && !down && fy > 0.5)
-        //    a.position.y = iy + 1;
-        // if (fy < 0.25)
-        //    a.position.y = iy;
-        // if (fy > 0.25)
-        //    a.position.y = iy + 1;
-    }
-}
+		if (a.velocity.x > 0.0f) {
+			inverseEnter.x = ap1.x - bp2.x;
+			inverseLeave.x = bp2.x - ap1.x;
+		} else {
+			inverseEnter.x = bp2.x - ap1.x;
+			inverseLeave.x = bp1.x - ap2.x;
+		}
+
+		if (a.velocity.y > 0.0f) {
+			inverseEnter.y = bp1.y - ap2.y;
+			inverseLeave.y = bp2.y - ap1.y;
+		} else {
+			inverseEnter.y = bp2.y - ap1.y;
+			inverseLeave.y = bp1.y - ap2.y;
+		}
+
+		glm::vec3 enter;
+		glm::vec3 leave;
+		constexpr float inf = std::numeric_limits<float>::infinity();
+
+		if (a.velocity.x == 0.0f) {
+			enter.x = -inf;
+			leave.x = inf;
+		} else {
+			enter.x = inverseEnter.x / a.velocity.x;
+			leave.x = inverseLeave.x / a.velocity.x;
+		}
+
+		if (a.velocity.x == 0.0f) {
+			enter.x = -inf;
+			leave.x = inf;
+		} else {
+			enter.x = inverseEnter.x / a.velocity.x;
+			leave.x = inverseLeave.x / a.velocity.x;
+		}
+
+		float enterTime = std::max(enter.x, leave.x);
+		float leaveTime = std::min(leave.x, leave.y);
+		if (enterTime > leaveTime || enter.x < 0.0f || enter.y < 0.0f || enter.x > 1.0f || enter.y > 1.0f) {
+			normal = {0.0f, 0.0f, 0.0f};
+			return 1.0f;
+		}
+
+		if (enter.x > enter.y) {
+			if (inverseEnter.x < 0.0f) {
+				normal = {1.0f, 0.0f, 0.0f};
+			} else {
+				normal = {-1.0f, 0.0f, 0.0f};
+			}
+		} else {
+			if (inverseEnter.y < 0.0f) {
+				normal = {0.0f, 1.0f, 0.0f};
+			} else {
+				normal = {0.0f, -1.0f, 0.0f};
+			}
+		}
+
+		return enterTime;
+	}
+
+	void DungeonActorComponent::update(Actor& actor, World& world) {}
+
+
+	void DungeonActorComponent::beginPlay(Actor& actor) {}
+
+
+	void DungeonActorComponent::handleCollisionStatic(Actor& a, Actor& b) {
+		// backup a's position
+		a.velocity = a.position - a.lastPosition;
+		a.position = a.lastPosition;
+		glm::vec3 normal;
+		float collisionTime = SweptAABB(a, b, normal);
+		if (collisionTime >= 1.0f) return;
+		a.position += a.velocity * collisionTime;
+		float timeLeft = 1.0f - collisionTime;
+		bool deflecting{false};
+		if (deflecting) {
+			a.velocity.x *= timeLeft;
+			a.velocity.y *= timeLeft;
+			if (std::abs(normal.x) > 0.0001f) a.velocity.x = -a.velocity.x;
+			if (std::abs(normal.y) > 0.0001f) a.velocity.y = -a.velocity.y;
+		} else {
+			glm::vec3 tangent = { normal.y, normal.x, 0.0f };
+			float cos_theta = glm::dot(a.velocity, tangent) * timeLeft;
+			a.velocity = cos_theta * tangent;
+		}
+		a.position += a.velocity;
+	}
+
+
+	void DungeonActorComponent::handleCollisionDynamic(Actor& a, Actor& b) {}
+
+
+	void DungeonActorComponent::handleCollisionWorld(Actor& a, World& w) {
+		debugDraw(a);
+		// determine whether to move the player up, or to the left
+		int ix1 = (int)(a.position.x);
+		int iy1 = (int)(a.position.y);
+		int ix2 = ix1 + 1; //(int)(a.position.x + a.size.x);
+		int iy2 = iy1 + 1; //(int)(a.position.y + a.size.y);
+		float fx1 = a.position.x - ix1;
+		float fy1 = a.position.y - iy1;
+		float fx2 = a.position.x + a.size.x - ix2;
+		float fy2 = a.position.y + a.size.y - iy2;
+		constexpr float tw = 1.0f;
+		constexpr float th = 1.0f;
+		float tx1 = std::floor(a.position.x);
+		float tx2 = tx1 + tw;
+		float ty1 = std::floor(a.position.y);
+		float ty2 = tx2 + th;
+
+		bool leftHalf = fx1 < 0.5f;
+		bool rightHalf = fx1 > 0.5f;
+		bool topHalf = fy1 < 0.5f;
+		bool bottomHalf = fy1 > 0.5f;
+
+		bool tl = w.getTile(ix1, iy1).flags;
+		bool tr = w.getTile(ix2, iy1).flags;
+		bool bl = w.getTile(ix1, iy2).flags;
+		bool br = w.getTile(ix2, iy2).flags;
+		int collision = 0;
+		// ####### We handle all cases of blocks with a switch statement
+		// #TL#TR#
+		// #######
+		// #BL#BR#
+		// #######
+		collision |= tl ? 1 : 0;
+		collision |= tr ? 2 : 0;
+		collision |= bl ? 4 : 0;
+		collision |= br ? 8 : 0;
+
+		constexpr int BLOCKS_RIGHT = 2 | 8;
+		constexpr int BLOCKS_LEFT = 1 | 4;
+		constexpr int BLOCKS_ABOVE = 1 | 2;
+		constexpr int BLOCKS_BELOW = 4 | 8;
+
+		// if ((collision & BLOCKS_RIGHT) && !(collision & BLOCKS_LEFT))
+		//    collision = BLOCKS_RIGHT;
+		// if (!(collision & BLOCKS_RIGHT) && (collision & BLOCKS_LEFT))
+		//    collision = BLOCKS_LEFT;
+		// if ((collision & BLOCKS_ABOVE) && !(collision & BLOCKS_BELOW))
+		//    collision = BLOCKS_ABOVE;
+		// if (!(collision & BLOCKS_ABOVE) && (collision & BLOCKS_BELOW))
+		//    collision = BLOCKS_BELOW;
+
+		float x1 = (float)ix2 - a.size.x;
+		float x2 = (float)ix2; // ix1 + 1.0f;
+		float y1 = (float)iy2 - a.size.y;
+		float y2 = (float)iy2; // iy1 + 1.0f;
+		int move = 0;
+		constexpr int MOVE_LT = 1;
+		constexpr int MOVE_RT = 2;
+		constexpr int MOVE_DN = 4;
+		constexpr int MOVE_UP = 8;
+		switch (collision) {
+		case 0: // nothing, so do nothing
+			break;
+		case 1: // top left single block
+			if (fx1 > fy1)
+				move = MOVE_RT;
+			else
+				move = MOVE_DN;
+			break;
+		case 2: // top right single block
+			if (fy1 < 0.99f)
+				move = MOVE_LT;
+			else
+				move = MOVE_DN;
+			break;
+		case BLOCKS_ABOVE: // top wall
+			move = MOVE_DN;
+			break;
+		case 4: // bottom left single block
+			if (fx1 > 0.99f)
+				move = MOVE_RT;
+			else
+				move = MOVE_UP;
+			break;
+		case BLOCKS_LEFT: // left wall
+			move = MOVE_RT;
+			break;
+		case 6: // bottom left single block, top right single block
+				// .#
+				// #.
+			if (leftHalf)
+				move |= MOVE_LT;
+			if (topHalf)
+				move |= MOVE_UP;
+			if (rightHalf)
+				move |= MOVE_RT;
+			if (bottomHalf)
+				move |= MOVE_DN;
+			break;
+		case 7: // top left wall
+			move = MOVE_RT | MOVE_DN;
+			break;
+		case 8: // bottom right single block
+			if (fx1 < fy1)
+				move = MOVE_LT;
+			else
+				move = MOVE_UP;
+			break;
+		case 9: // top left single block, bottom right single block
+				// #.
+				// .#
+			if (leftHalf)
+				move |= MOVE_LT;
+			if (bottomHalf)
+				move |= MOVE_DN;
+			if (rightHalf)
+				move |= MOVE_RT;
+			if (topHalf)
+				move |= MOVE_UP;
+			break;
+		case BLOCKS_RIGHT: // right wall
+			move = MOVE_LT;
+			break;
+		case 11: // top right wall
+			move = MOVE_LT | MOVE_DN;
+			break;
+		case BLOCKS_BELOW: // bottom wall
+			move = MOVE_UP;
+			break;
+		case 13: // bottom left wall
+			move = MOVE_RT | MOVE_UP;
+			break;
+		case 14: // bottom right wall
+			move = MOVE_LT | MOVE_UP;
+			break;
+		case 15: // all walls (just do nothing)
+			break;
+		}
+
+		int velx = 0;
+		int vely = 0;
+		if (move & MOVE_LT) {
+			a.position.x = x1;
+			velx = 1;
+		} else if (move & MOVE_RT) {
+			a.position.x = x2;
+			velx = 1;
+		}
+		if (move & MOVE_UP) {
+			a.position.y = y1;
+			vely = 1;
+		} else if (move & MOVE_DN) {
+			a.position.y = y2;
+			vely = 1;
+		}
+		constexpr int elastic = 1;
+		if (elastic) {
+			if (velx)
+				a.velocity.x = -a.velocity.x;
+			if (vely)
+				a.velocity.y = -a.velocity.y;
+		} else {
+			if (velx)
+				a.velocity.x = 0.0f;
+			if (vely)
+				a.velocity.y = 0.0f;
+		}
+	}
+
+
+	void DungeonActorComponent::beginOverlap(Actor& a, Actor& b) {
+		HFLOGDEBUG("Actor '%d' is now overlapping trigger actor '%d'", a.getId(), b.getId());
+	}
+
+
+	void DungeonActorComponent::endOverlap(Actor& a, Actor& b) {
+		HFLOGDEBUG("Actor '%d' is not overlapping trigger actor '%d'", a.getId(), b.getId());
+	}
+} // namespace GameLib
