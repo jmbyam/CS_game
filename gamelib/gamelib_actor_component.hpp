@@ -39,6 +39,16 @@ namespace GameLib {
 		virtual ~DainNickJosephWorldCollidingActorComponent() {}
 		void handleCollisionWorld(Actor& actor, World& world) override;
 	};
+
+	class TailonsDynamicCollidingActorComponent : public ActorComponent {
+        virtual ~TailonsDynamicCollidingActorComponent() {}
+        void handleCollisionDynamic(Actor& actor, Actor& actor2) override;
+    };
+
+    class TailonsStaticCollidingActorComponent : public ActorComponent {
+        virtual ~TailonsStaticCollidingActorComponent() {}
+        void handleCollisionStatic(Actor& actor, Actor& actor2) override;
+    };
 } // namespace GameLib
 
 #endif

@@ -41,4 +41,8 @@ namespace GameLib {
             }
         }
     }
+
+	  void TailonsDynamicCollidingActorComponent::handleCollisionDynamic(Actor& actor, Actor& actor2) { actor.velocity.x *= -1; }
+
+    void TailonsStaticCollidingActorComponent::handleCollisionStatic(Actor& a, Actor& b) {}
 }

@@ -219,4 +219,18 @@ namespace GameLib {
 			a.position.y = clamp<float>(a.position.y, 0, (float)w.worldSizeY - a.size.y);
 		}
 	}
+
+	 bool GameLib::TailonsDynamicPhysicsComponent::collideDynamic(Actor& a, Actor& b) { return collides(a, b); }
+
+    void GameLib::TailonsDynamicPhysicsComponent::update(Actor& a, World& w) {
+        a.position += a.dt * a.speed * a.velocity;
+        if (a.clipToWorld) {
+            a.position.x = clamp<float>(a.position.x, 0, (float)w.worldSizeX - a.size.x);
+            a.position.y = clamp<float>(a.position.y, 0, (float)w.worldSizeY - a.size.y);
+        }
+    }
+
+    bool GameLib::TailonsStaticPhysicsComponent::collideStatic(Actor& a, Actor& b) { return collides(a, b); }
+
+    void GameLib::TailonsStaticPhysicsComponent::update(Actor& a, World& w) {}
 } // namespace GameLib

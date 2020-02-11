@@ -46,6 +46,22 @@ namespace GameLib {
 
         void update(Actor& a, World& w) override;
     };
+
+	class TailonsDynamicPhysicsComponent : public PhysicsComponent {
+        ~TailonsDynamicPhysicsComponent(){};
+
+        bool collideDynamic(Actor& a, Actor& b) override;
+
+        void update(Actor& a, World& w) override;
+    };
+
+	class TailonsStaticPhysicsComponent : public PhysicsComponent {
+        ~TailonsStaticPhysicsComponent(){};
+
+        bool collideStatic(Actor& a, Actor& b) override;
+
+        void update(Actor& a, World& w) override;
+    };
 }
 
 #endif
