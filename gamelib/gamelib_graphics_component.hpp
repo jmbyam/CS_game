@@ -17,6 +17,11 @@ namespace GameLib {
         virtual ~SimpleGraphicsComponent() {}
         void draw(Actor& actor, Graphics& graphics) override;
     };
+
+    class DebugGraphicsComponent : public GraphicsComponent {
+    public:
+        void draw(Actor& actor, Graphics& graphics) override;
+    };
 }
 
 #endif // GAMELIB_COMPONENT_HPP

@@ -20,6 +20,9 @@ namespace GameLib {
     public:
         virtual ~RandomInputComponent() {}
         void update(Actor& actor) override;
+
+    private:
+        int count{ 0 };
     };
 }
 

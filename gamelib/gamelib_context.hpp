@@ -10,6 +10,8 @@ namespace GameLib {
     constexpr int WindowResizeable = SDL_WINDOW_RESIZABLE;
     constexpr int WindowOpenGL = SDL_WINDOW_OPENGL;
 
+    static constexpr int LIBXOR_TILESET32 = -1;
+
     class Context {
     public:
         Context(int width, int height, int flags = WindowResizeable);
@@ -142,6 +144,13 @@ namespace GameLib {
             std::vector<int> scancodes;
             std::map<int, int> keys;
             int mod{ 0 };
+            bool checkClear(int scancode) {
+                if (scancodes[scancode]) {
+                    scancodes[scancode] = 0;
+                    return true;
+                }
+                return false;
+			}
         } keyboard;
 
         // MaxGameControllers reflects the XInput library max of four controllers

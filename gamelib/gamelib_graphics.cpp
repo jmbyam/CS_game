@@ -25,4 +25,10 @@ namespace GameLib {
         spriteInfo.angle = 0.0f;
         context->drawTexture(tileSetId, tileId, spriteInfo);
     }
+
+	void Graphics::draw(int x, int y, int w, int h, SDL_Color color) {
+        SDL_Rect rect{ x, y, w, h };		
+		SDL_SetRenderDrawColor(context->renderer(), color.r, color.g, color.b, SDL_ALPHA_OPAQUE);
+        SDL_RenderFillRect(context->renderer(), &rect);        
+	}
 }

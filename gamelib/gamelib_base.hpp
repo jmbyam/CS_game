@@ -76,24 +76,29 @@ namespace GameLib {
         }
     };
 
-	template <typename T>
-	T clamp(T x, T a, T b) {
+    template <typename T>
+    T clamp(T x, T a, T b) {
         return (x < a) ? a : (x > b) ? b : x;
-	}
+    }
 
-	// returns range 0 to 1 with 1 cycle per second
-	template <typename T>
-	T wave(T x, T cyclesPerSecond) {
+    template <typename T>
+    T fract(T x) {
+        return (T)(x - int(x));
+    }
+
+    // returns range 0 to 1 with 1 cycle per second
+    template <typename T>
+    T wave(T x, T cyclesPerSecond) {
         return (T)std::sin(x * cyclesPerSecond * 6.28318531f) * 0.5f + 0.5f;
-	}
+    }
 
-	template <typename T>
-	T triangle(T x, T cyclesPerSecond) {
+    template <typename T>
+    T triangle(T x, T cyclesPerSecond) {
         float t = x * cyclesPerSecond;
         return (T)(2.0f * std::abs(t - std::floor(t + 0.5f)));
-	}
+    }
 
-	// Colors
+    // Colors
     static const SDL_Color Black{ 0, 0, 0, 255 };
     static const SDL_Color Gray33{ 85, 85, 85, 255 };
     static const SDL_Color Gray67{ 170, 170, 170, 255 };
@@ -116,9 +121,9 @@ namespace GameLib {
         { 228, 0, 114, 255 }, { 127, 63, 0, 255 }, { 212, 171, 56, 255 },  { 63, 127, 63, 255 },
     };
 
-	// color1 (0-15), color2 (0-15), mix(0 - 7), neg(true/false)
-	inline SDL_Color MakeColor(int color1, int color2, int mix, bool neg) { 
-		const SDL_Color& c1 = LibXORColors[color1];
+    // color1 (0-15), color2 (0-15), mix(0 - 7), neg(true/false)
+    inline SDL_Color MakeColor(int color1, int color2, int mix, bool neg) {
+        const SDL_Color& c1 = LibXORColors[color1];
         const SDL_Color& c2 = LibXORColors[color2];
         float t = clamp<float>(mix * 0.142857f, 0.0f, 1.0f);
         Uint8 r = (Uint8)clamp<int>((int)(t * c1.r + (1.0f - t) * c2.r), 0, 255);
@@ -129,11 +134,11 @@ namespace GameLib {
             g = 255 - g;
             b = 255 - b;
         }
-		return { r, g, b, 255 };
-	}
+        return { r, g, b, 255 };
+    }
 
-	// color1 (0-15), color2 (0-15), mix (0-1), neg(true/false)
-	inline SDL_Color MakeColorHI(int color1, int color2, float mix, bool neg) {
+    // color1 (0-15), color2 (0-15), mix (0-1), neg(true/false)
+    inline SDL_Color MakeColorHI(int color1, int color2, float mix, bool neg) {
         const SDL_Color& c1 = LibXORColors[color1];
         const SDL_Color& c2 = LibXORColors[color2];
         float t = clamp<float>(mix, 0.0f, 1.0f);

@@ -14,6 +14,11 @@ namespace GameLib {
     }
 
     void RandomInputComponent::update(Actor& actor) {
+        if (count++ > 5) {
+            count = 0;
+        } else {
+            return;
+        }
         actor.velocity.x = random.normal();
         actor.velocity.y = random.normal();
         glm::normalize(actor.velocity);
