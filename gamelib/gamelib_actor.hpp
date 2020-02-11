@@ -127,7 +127,8 @@ namespace GameLib {
 		float speed{1.0f};
 
 		struct TRIGGERINFO {
-			bool overlapping{false};
+			bool overlapping{false};			
+			Actor* triggerActor{nullptr};
 		} triggerInfo;
 
 		enum { NONE = 0, DYNAMIC = 1, STATIC = 2, TRIGGER = 4 };

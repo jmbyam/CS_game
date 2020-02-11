@@ -52,15 +52,31 @@ namespace GameLib {
 					actor_->handleCollisionDynamic(*this, *b);
 			}
 
-			for (Actor* trigger : world.triggerActors) {
-				if (this == trigger)
-					continue;
-				if (!triggerInfo.overlapping && physics_->collideTrigger(*this, *trigger)) {
-					triggerInfo.overlapping = true;
-					actor_->beginOverlap(*this, *trigger);
-				} else if (triggerInfo.overlapping && !physics_->collideTrigger(*this, *trigger)) {
+			if (triggerInfo.overlapping && triggerInfo.triggerActor) {
+				Actor* trigger = triggerInfo.triggerActor;
+				if (!physics_->collideTrigger(*this, *trigger)) {
 					triggerInfo.overlapping = false;
+					triggerInfo.triggerActor = nullptr;
 					actor_->endOverlap(*this, *trigger);
+
+					if (trigger->actor_) {
+						trigger->triggerInfo.overlapping = false;
+						trigger->actor_->endTriggerOverlap(*trigger, *this);
+					}
+				}
+			} else {
+				for (Actor* trigger : world.triggerActors) {
+					if (this == trigger)
+						continue;
+					if (!triggerInfo.overlapping && physics_->collideTrigger(*this, *trigger)) {
+						triggerInfo.overlapping = true;
+						actor_->beginOverlap(*this, *trigger);
+						if (trigger->actor_) {
+							trigger->triggerInfo.overlapping = true;
+							trigger->actor_->beginTriggerOverlap(*trigger, *this);
+							triggerInfo.triggerActor = trigger;
+						}
+					}
 				}
 			}
 		}

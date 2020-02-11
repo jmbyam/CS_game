@@ -22,6 +22,18 @@ namespace GameLib {
 				a.position.y += movement;
 			}
 		}
+
+		if (a.isTrigger()) {
+			if (triggerInfo.t > 0.0f) {
+				a.position.y = triggerInfo.position.y + std::sin(50.0f * triggerInfo.t) * 0.25f;
+				triggerInfo.t -= a.dt;
+				if (triggerInfo.t < 0.0f) {
+					HFLOGDEBUG("Actor '%d' going back to sprite %d", a.getId(), triggerInfo.oldSpriteId);
+					a.position = triggerInfo.position;
+					a.spriteId = triggerInfo.oldSpriteId;
+				}
+			}
+		}
 	}
 
 
@@ -270,12 +282,30 @@ namespace GameLib {
 
 	void DungeonActorComponent::beginOverlap(Actor& a, Actor& b) {
 		HFLOGDEBUG("Actor '%d' is now overlapping trigger actor '%d'", a.getId(), b.getId());
-		a.position.x = random.positive() * Locator::getWorld()->worldSizeX;
-		a.position.y = random.positive() * Locator::getWorld()->worldSizeY;
 	}
 
 
 	void DungeonActorComponent::endOverlap(Actor& a, Actor& b) {
 		HFLOGDEBUG("Actor '%d' is not overlapping trigger actor '%d'", a.getId(), b.getId());
+	}
+
+	void DungeonActorComponent::beginTriggerOverlap(Actor& a, Actor& b) {
+		HFLOGDEBUG("Trigger actor '%d' is now overlapped by actor '%d'", a.getId(), b.getId());
+		if (triggerInfo.t <= 0.0f) {
+			// if we are not already animating
+			triggerInfo.oldSpriteId = a.spriteId;
+			a.spriteId = a.spriteId + 50;
+		}
+		triggerInfo.position = a.position;
+		triggerInfo.t = 2.0f;
+		HFLOGDEBUG("Actor '%d' is now using  sprite %d", a.getId(), a.spriteId);
+		b.position.x = 1 + random.positive() * (Locator::getWorld()->worldSizeX - 2);
+		b.position.y = 1 + random.positive() * (Locator::getWorld()->worldSizeY - 2);
+		Locator::getAudio()->playAudio(1, true);
+	}
+
+
+	void DungeonActorComponent::endTriggerOverlap(Actor& a, Actor& b) {
+		HFLOGDEBUG("Trigger actor '%d' is not overlapped by actor '%d'", a.getId(), b.getId());
 	}
 } // namespace GameLib

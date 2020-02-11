@@ -328,6 +328,9 @@ int main(int argc, char** argv) {
 	actor = MakeActor(10, 10, 4, 102, nullptr, NewDungeonActor(), NewPhysics(), NewGraphics());
 	world.addTriggerActor(actor);
 
+	actor = MakeActor(19, 10, 4, 103, nullptr, NewDungeonActor(), NewPhysics(), NewGraphics());
+	world.addTriggerActor(actor);
+
 	//// Some extras
 	// GameLib::Actor randomPlayer1(new GameLib::RandomInputComponent(), new GameLib::DungeonActorComponent(),
 	//							 new GameLib::TraceCurtisDynamicActorComponent(),

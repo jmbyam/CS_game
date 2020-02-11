@@ -15,6 +15,8 @@ namespace GameLib {
 		void handleCollisionWorld(Actor& actor, World& world) override;
 		void beginOverlap(Actor& a, Actor& b) override;
 		void endOverlap(Actor& a, Actor& b) override;
+		void beginTriggerOverlap(Actor& a, Actor& b) override;
+		void endTriggerOverlap(Actor& a, Actor& b) override;
 
 	private:
 		struct STATICINFO {
@@ -23,6 +25,12 @@ namespace GameLib {
 			glm::vec3 position;
 			float t{0.0f};
 		} staticInfo;
+
+		struct TRIGGERINFO {
+			int oldSpriteId{0};
+			glm::vec3 position;
+			float t{0.0f};
+		} triggerInfo;
 	};
 } // namespace GameLib
 #endif
