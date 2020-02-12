@@ -24,6 +24,20 @@ namespace GameLib {
     private:
         int count{ 0 };
     };
+
+	 class InputComponentForDynamic : public InputComponent {
+    public:
+        virtual ~InputComponentForDynamic() {}
+
+        void update(Actor& actor) override;
+    };
+
+    class InputComponentForStatic : public InputComponent {
+    public:
+        virtual ~InputComponentForStatic() {}
+
+        void update(Actor& actor) override;
+    };
 }
 
 #endif

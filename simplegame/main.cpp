@@ -363,6 +363,28 @@ int main(int argc, char** argv) {
 	// randomPlayer3.spriteId = 4;
 	// randomPlayer3.speed = (float)graphics.getTileSizeX();
 
+	GameLib::Actor Tailon(new GameLib::InputComponentForDynamic(),
+                          new GameLib::TailonsDynamicCollidingActorComponent(),
+                          new GameLib::TailonsDynamicPhysicsComponent(),
+                          new GameLib::SimpleGraphicsComponent());
+
+    world.addDynamicActor(&Tailon);
+    Tailon.position.x = graphics.getCenterX() / (float)graphics.getTileSizeX();
+    Tailon.position.y = graphics.getCenterY() / (float)graphics.getTileSizeY() - 9;
+    Tailon.spriteId = 300;
+    Tailon.speed = (float)graphics.getTileSizeX();
+
+    GameLib::Actor Tailon2(new GameLib::InputComponentForStatic(),
+                           new GameLib::TailonsStaticCollidingActorComponent(),
+                           new GameLib::TailonsStaticPhysicsComponent(),
+                           new GameLib::SimpleGraphicsComponent());
+
+    world.addStaticActor(&Tailon2);
+    Tailon2.position.x = graphics.getCenterX() / (float)graphics.getTileSizeX() - 8;
+    Tailon2.position.y = graphics.getCenterY() / (float)graphics.getTileSizeY() - 9;
+    Tailon2.spriteId = 30;
+    Tailon2.speed = (float)graphics.getTileSizeX();
+
 	float t0 = stopwatch.Stop_sf();
 	float lag = 0.0f;
 	constexpr float MS_PER_UPDATE = 0.001f;
