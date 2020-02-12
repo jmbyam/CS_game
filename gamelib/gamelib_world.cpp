@@ -182,7 +182,7 @@ namespace GameLib {
 				if (Tokens::mapCell.count(c))
 					val = Tokens::mapCell[val];
 				setTile(i, row, Tile(val));
-				getTile(i, row).flags = (c == Tokens::nocollide) ? 0 : 1;
+				getTile(i, row).flags = (c == Tokens::nocollide) ? Tile::EMPTY : Tile::SOLID;
 			}
 			break;
 		case Tokens::Tiles::NOCOLLIDE:

@@ -66,7 +66,7 @@ namespace GameLib {
 		// Gets column 4 of the world matrix which is the local origin in world space
 		glm::vec3 worldPosition() const {
 			glm::mat4 w = worldMatrix();
-			return glm::vec3{w[3][0], w[3][1], w[3][2]};
+			return glm::vec3{ w[3][0], w[3][1], w[3][2] };
 		}
 
 		// Gets the minimum bounds for this actor in world space, bbox is not rotated
@@ -85,20 +85,20 @@ namespace GameLib {
 		using ubool = unsigned short; // using short can avoid character integer issues
 
 		// sprite number for this object
-		uint spriteId{0};
+		uint spriteId{ 0 };
 		// sprite library number for this object
-		uint spriteLibId{0};
-		bool spriteFlipX{false};
-		bool spriteFlipY{false};
+		uint spriteLibId{ 0 };
+		bool spriteFlipX{ false };
+		bool spriteFlipY{ false };
 
 		// is object visible for drawing
-		ubool visible{true};
+		ubool visible{ true };
 		// is actor active for updating
-		ubool active{true};
+		ubool active{ true };
 		// is object used for physics
-		ubool clipToWorld{true};
+		ubool clipToWorld{ true };
 		// is object unable to move
-		ubool movable{true};
+		ubool movable{ true };
 
 		// transform that takes this object to world space
 		glm::mat4 transform;
@@ -113,22 +113,29 @@ namespace GameLib {
 		float dt;
 
 		// current position
-		glm::vec3 position{0.0f, 0.0f, 0.0f};
-		glm::vec3 lastPosition{0.0f, 0.0f, 0.0f};
-		glm::vec3 dPosition{0.0f, 0.0f, 0.0f};
+		glm::vec3 position{ 0.0f, 0.0f, 0.0f };
+		glm::vec3 lastPosition{ 0.0f, 0.0f, 0.0f };
+		glm::vec3 dPosition{ 0.0f, 0.0f, 0.0f };
 
 		// size (assume 1 = grid size)
-		glm::vec3 size{1.0f, 1.0f, 1.0f};
+		glm::vec3 size{ 1.0f, 1.0f, 1.0f };
 
 		// current velocity
-		glm::vec3 velocity{0.0f, 0.0f, 0.0f};
+		glm::vec3 velocity{ 0.0f, 0.0f, 0.0f };
 
 		// maximum speed
-		float speed{1.0f};
+		float speed{ 1.0f };
+
+		struct PHYSICSINFO {
+			float mass{ 1.0f };
+			glm::vec3 v {0.0f,0.0f,0.0f};
+			glm::vec3 v_t{ 0.0f, 0.0f, 0.0f };
+			glm::vec3 v_n{ 0.0f, 0.0f, 0.0f };
+		} physicsInfo;
 
 		struct TRIGGERINFO {
-			bool overlapping{false};			
-			Actor* triggerActor{nullptr};
+			bool overlapping{ false };
+			Actor* triggerActor{ nullptr };
 		} triggerInfo;
 
 		enum { NONE = 0, DYNAMIC = 1, STATIC = 2, TRIGGER = 4 };
@@ -149,20 +156,20 @@ namespace GameLib {
 
 	protected:
 		std::string _updateDesc() override {
-			return {"Actor"};
+			return { "Actor" };
 		}
 		std::string _updateInfo() override {
-			return {"Actor"};
+			return { "Actor" };
 		}
 		char charDesc_ = '?';
-		unsigned id_{0};
-		int type_{NONE};
+		unsigned id_{ 0 };
+		int type_{ NONE };
 
 	private:
-		InputComponent* input_{nullptr};
-		PhysicsComponent* physics_{nullptr};
-		GraphicsComponent* graphics_{nullptr};
-		ActorComponent* actor_{nullptr};
+		InputComponent* input_{ nullptr };
+		PhysicsComponent* physics_{ nullptr };
+		GraphicsComponent* graphics_{ nullptr };
+		ActorComponent* actor_{ nullptr };
 
 		static unsigned idSource_;
 	};

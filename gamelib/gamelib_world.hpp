@@ -21,8 +21,10 @@ namespace GameLib {
 	public:
 		Tile() {}
 		Tile(unsigned c) : charDesc(c) {}
-		unsigned charDesc{0};
-		unsigned flags{0};
+		static constexpr unsigned EMPTY = 0;
+		static constexpr unsigned SOLID = 1;
+		unsigned charDesc{ 0 };
+		unsigned flags{ EMPTY };
 	};
 
 	class Actor;
@@ -42,6 +44,12 @@ namespace GameLib {
 
 		void setTile(int x, int y, Tile ptr);
 		Tile& getTile(int x, int y);
+		const Tile& getTile(glm::vec3 p) const {
+			return getTile((int)p.x, (int)p.y);
+		}
+		const Tile& getTile(glm::vec3 p, int offsetX, int offsetY) const {
+			return getTile((int)p.x + offsetX, (int)p.y + offsetY);
+		}
 		const Tile& getTile(int x, int y) const;
 		int getCollisionTile(float x, float y) const;
 		void setCollisionTile(float x, float y, int value);
@@ -64,16 +72,25 @@ namespace GameLib {
 		void addTriggerActor(Actor* a);
 
 		// number of tiles in the X direction
-		int worldSizeX{WorldPagesX * WorldTilesX};
+		int worldSizeX{ WorldPagesX * WorldTilesX };
 
 		// number of tiles in the Y direction
-		int worldSizeY{WorldPagesY * WorldTilesY};
+		int worldSizeY{ WorldPagesY * WorldTilesY };
 
 		// number of collision tiles in one tile
 		int collisionSizeX = worldSizeX * CollisionTileResolution;
 
 		// number of collision tiles vertically
 		int collisionSizeY = worldSizeY * CollisionTileResolution;
+
+		// Global physics constants for world
+		struct PHYSICSINFO {
+			float c_r{ 0.5f };				 // coefficient of resitution
+			float c_f{ 0.5f };				 // coefficient of friction
+			glm::vec3 g{ 0.0f, 9.8f, 0.0f }; // gravity acceleration
+			float d{ 0.05f };				 // air resistance
+			glm::vec3 v_wind;				 // wind velocity
+		} worldPhysicsInfo;
 	};
 } // namespace GameLib
 

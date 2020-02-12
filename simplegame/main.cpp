@@ -2,13 +2,14 @@
 // by Dr. Jonathan Metzgar et al
 // UAF CS Game Design and Architecture Course
 #include "DungeonActorComponent.hpp"
+#include "NewtonPhysicsComponent.hpp"
 #include <gamelib.hpp>
 
 #pragma comment(lib, "gamelib.lib")
 
 class PlaySoundCommand : public GameLib::InputCommand {
 public:
-	PlaySoundCommand(int audioClipId, bool stopPrevious) : musicClipId_{audioClipId}, stopPrevious_{stopPrevious} {}
+	PlaySoundCommand(int audioClipId, bool stopPrevious) : musicClipId_{ audioClipId }, stopPrevious_{ stopPrevious } {}
 
 	const char* type() const override {
 		return "PlaySoundCommand";
@@ -20,13 +21,13 @@ public:
 	}
 
 private:
-	int musicClipId_{0};
-	bool stopPrevious_{false};
+	int musicClipId_{ 0 };
+	bool stopPrevious_{ false };
 };
 
 class PlayMusicCommand : public GameLib::InputCommand {
 public:
-	PlayMusicCommand(int musicClipId) : musicClipId_{musicClipId} {}
+	PlayMusicCommand(int musicClipId) : musicClipId_{ musicClipId } {}
 
 	const char* type() const override {
 		return "PlayMusicCommand";
@@ -38,8 +39,8 @@ public:
 	}
 
 private:
-	int musicClipId_{0};
-	bool stopPrevious_{false};
+	int musicClipId_{ 0 };
+	bool stopPrevious_{ false };
 };
 
 class QuitCommand : public GameLib::InputCommand {
@@ -107,7 +108,7 @@ namespace GameLib {
 
 		// calculates the width of the string text
 		int calcWidth(const char* text) {
-			int w{0};
+			int w{ 0 };
 			if (font_)
 				TTF_SizeUTF8(font_, text, &w, nullptr);
 			return w;
@@ -161,10 +162,10 @@ namespace GameLib {
 		}
 
 	private:
-		Context* context_{nullptr};
-		TTF_Font* font_{nullptr};
-		SDL_Texture* texture_{nullptr};
-		SDL_Surface* surface_{nullptr};
+		Context* context_{ nullptr };
+		TTF_Font* font_{ nullptr };
+		SDL_Texture* texture_{ nullptr };
+		SDL_Surface* surface_{ nullptr };
 		SDL_Rect rect_;
 		int style_ = TTF_STYLE_NORMAL;
 	};
@@ -224,7 +225,7 @@ int main(int argc, char** argv) {
 	GameLib::Context context(1280, 720, GameLib::WindowDefault);
 	GameLib::Audio audio;
 	GameLib::InputHandler input;
-	GameLib::Graphics graphics{&context};
+	GameLib::Graphics graphics{ &context };
 
 	GameLib::Locator::provide(&context);
 	if (context.audioInitialized())
@@ -296,10 +297,11 @@ int main(int argc, char** argv) {
 	auto NewRandomInput = []() { return new GameLib::RandomInputComponent(); };
 	auto NewActor = []() { return new GameLib::ActorComponent(); };
 	auto NewPhysics = []() { return new GameLib::SimplePhysicsComponent(); };
+	auto NewNewtonPhysics = []() { return new GameLib::NewtonPhysicsComponent(); };
 	auto NewGraphics = []() { return new GameLib::SimpleGraphicsComponent(); };
 	auto NewDebugGraphics = []() { return new GameLib::DebugGraphicsComponent(); };
 
-	GameLib::Actor* actor{nullptr};
+	GameLib::Actor* actor{ nullptr };
 	float cx = world.worldSizeX * 0.5f;
 	float cy = world.worldSizeY * 0.5f;
 
@@ -310,7 +312,7 @@ int main(int argc, char** argv) {
 	// player.position.y = graphics.getCenterY() / (float)graphics.getTileSizeY();
 	// player.spriteId = 2;
 	// player.speed = 4.0f;
-	actor = MakeActor(cx - 6, cy, 4, 2, NewInput(), NewDungeonActor(), NewPhysics(), NewGraphics());
+	actor = MakeActor(cx - 6, cy, 4, 2, NewInput(), NewDungeonActor(), NewNewtonPhysics(), NewGraphics());
 	world.addDynamicActor(actor);
 
 	actor = MakeActor(cx + 6, cy + 4, 4, 32, nullptr, NewDungeonActor(), NewPhysics(), NewGraphics());
@@ -388,7 +390,7 @@ int main(int argc, char** argv) {
 		for (int x = 0; x < world.worldSizeX; x++) {
 			for (int y = 0; y < world.worldSizeY; y++) {
 				GameLib::SPRITEINFO s;
-				s.position = {x * 32, y * 32};
+				s.position = { x * 32, y * 32 };
 				auto t = world.getTile(x, y);
 				context.drawTexture(s.position, 0, t.charDesc);
 			}
@@ -416,7 +418,7 @@ int main(int argc, char** argv) {
 		minchofont.draw(0, (int)graphics.getHeight() - 2, "HP: 56", GameLib::Gold,
 						GameLib::Font::VALIGN_BOTTOM | GameLib::Font::SHADOWED);
 
-		char fpsstr[64] = {0};
+		char fpsstr[64] = { 0 };
 		snprintf(fpsstr, 64, "%3.2f", 1.0f / dt);
 		minchofont.draw((int)graphics.getWidth(), (int)graphics.getHeight() - 2, fpsstr, GameLib::Gold,
 						GameLib::Font::HALIGN_RIGHT | GameLib::Font::VALIGN_BOTTOM | GameLib::Font::SHADOWED);
@@ -449,16 +451,16 @@ void testSprites(GameLib::Context& context, int spriteCount, int& spritesDrawn, 
 	// 60 * 34 * 4;
 	for (int i = 0; i < SpritesToDraw; i++) {
 		GameLib::SPRITEINFO s;
-		s.position = {rand() % 1280, rand() % 720};
-		s.center = {0.0f, 0.0f};
+		s.position = { rand() % 1280, rand() % 720 };
+		s.center = { 0.0f, 0.0f };
 		s.flipFlags = 0;
 		s.angle = (float)(rand() % 360);
 		// context.drawTexture(0, rand() % spriteCount, s);
-		s.position = {rand() % 1280, rand() % 720};
+		s.position = { rand() % 1280, rand() % 720 };
 		context.drawTexture(s.position, 0, rand() % spriteCount);
 	}
 	spritesDrawn += SpritesToDraw;
 
-	context.drawTexture({50, 0}, {100, 100}, testPNG);
-	context.drawTexture({250, 250}, {100, 100}, testJPG);
+	context.drawTexture({ 50, 0 }, { 100, 100 }, testPNG);
+	context.drawTexture({ 250, 250 }, { 100, 100 }, testJPG);
 }

@@ -11,3 +11,16 @@ BreakBeforeBraces: Attach
 PointerBindsToType: true
 AllowShortFunctionsOnASingleLine: Empty
 AlignTrailingComments: true
+Cpp11BracedListStyle: false
+
+IncludeCategories:
+  - Regex:           '^"(llvm|llvm-c|clang|clang-c)/'
+    Priority:        2
+    SortPriority:    2
+  - Regex:           '^(<|"(gtest|gmock|isl|json)/)'
+    Priority:        3
+  - Regex:           '<[[:alnum:].]+>'
+    Priority:        4
+  - Regex:           '.*'
+    Priority:        1
+    SortPriority:    0

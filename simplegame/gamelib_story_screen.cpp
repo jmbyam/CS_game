@@ -2,6 +2,4 @@
 
 namespace GameLib {
 	StoryScreen::StoryScreen() {}
-
-
 }
