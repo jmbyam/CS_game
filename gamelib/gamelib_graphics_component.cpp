@@ -12,10 +12,10 @@ namespace GameLib {
 			int iy1 = (int)(a.position.y);
 			int ix2 = ix1 + 1;
 			int iy2 = iy1 + 1;
-			int tl = world->getTile(ix1, iy1).flags ? 9 : 8;
-			int tr = world->getTile(ix2, iy1).flags ? 9 : 8;
-			int bl = world->getTile(ix1, iy2).flags ? 9 : 8;
-			int br = world->getTile(ix2, iy2).flags ? 9 : 8;
+			int tl = world->getTile(ix1, iy1).solid() ? 9 : 8;
+			int tr = world->getTile(ix2, iy1).solid() ? 9 : 8;
+			int bl = world->getTile(ix1, iy2).solid() ? 9 : 8;
+			int br = world->getTile(ix2, iy2).solid() ? 9 : 8;
 			float fx = fract(a.position.x);
 			float fy = fract(a.position.y);
 			int w = graphics->getTileSizeX();

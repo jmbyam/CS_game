@@ -131,10 +131,10 @@ namespace GameLib {
 		bool topHalf = fy1 < 0.5f;
 		bool bottomHalf = fy1 > 0.5f;
 
-		bool tl = w.getTile(ix1, iy1).flags;
-		bool tr = w.getTile(ix2, iy1).flags;
-		bool bl = w.getTile(ix1, iy2).flags;
-		bool br = w.getTile(ix2, iy2).flags;
+		bool tl = w.getTile(ix1, iy1).solid();
+		bool tr = w.getTile(ix2, iy1).solid();
+		bool bl = w.getTile(ix1, iy2).solid();
+		bool br = w.getTile(ix2, iy2).solid();
 		int collision = 0;
 		// ####### We handle all cases of blocks with a switch statement
 		// #TL#TR#

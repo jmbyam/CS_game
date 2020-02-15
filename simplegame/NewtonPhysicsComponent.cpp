@@ -14,9 +14,9 @@ namespace GameLib {
 		auto tileBelowHead = w.getTile(x, topOfHead);
 		auto tilePlayer = w.getTile(x, aboveFoot);
 		auto tileBelow = w.getTile(x, belowFoot);
-		if (tileAboveHead.flags & Tile::SOLID)
+		if (tileAboveHead.solid())
 			return true;
-		if (tileBelow.flags & Tile::SOLID) {
+		if (tileBelow.solid()) {
 			return true;
 		}
 		return false;

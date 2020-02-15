@@ -29,6 +29,9 @@ namespace GameLib {
 		static constexpr unsigned SOLID_BR = 0x08;
 		static constexpr unsigned SOLID = SOLID_TL | SOLID_TR | SOLID_BL | SOLID_BR;
 
+		bool solid() const { return flags & SOLID; }
+		bool empty() const { return !solid(); }
+
 		char charDesc{ '?' };
 		unsigned spriteId{ 0 };
 		unsigned flags{ EMPTY };

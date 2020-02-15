@@ -6,8 +6,8 @@
 namespace GameLib {
 	StoryScreen::StoryScreen() {
 		Context* context = Locator::getContext();
-		screenWidth = context->screenWidth;
-		screenHeight = context->screenHeight;
+		screenWidth = (float)context->screenWidth;
+		screenHeight = (float)context->screenHeight;
 		screenSize = std::min(screenWidth, screenHeight);
 	}
 

@@ -125,13 +125,13 @@ namespace GameLib {
 		int aiy = (int)a.position.y;
 		bool fracX = a.position.x - aix > 0;
 		bool fracY = a.position.y - aiy > 0;
-		if (w.getTile(aix, aiy).flags != 0)
+		if (w.getTile(aix, aiy).solid())
 			return true;
-		if (fracX && w.getTile(aix + 1, aiy).flags != 0)
+		if (fracX && w.getTile(aix + 1, aiy).solid())
 			return true;
-		if (fracY && w.getTile(aix, aiy + 1).flags != 0)
+		if (fracY && w.getTile(aix, aiy + 1).solid())
 			return true;
-		if (fracX && fracY && w.getTile(aix + 1, aiy + 1).flags != 0)
+		if (fracX && fracY && w.getTile(aix + 1, aiy + 1).solid())
 			return true;
 		return false;
 	}
@@ -194,18 +194,18 @@ namespace GameLib {
 		
 		float subTileSize = 1.0;
 		for (float x = floor(a.position.x); x < ceil(a.position.x + a.size.x); x += subTileSize) {
-			if (w.getTilef(x, floor(a.position.y)).flags == 1) {
+			if (w.getTilef(x, floor(a.position.y)).solid()) {
 				return true;
 			}
-			if (w.getTilef(x, ceil(a.position.y + a.size.y) - subTileSize).flags == 1) {
+			if (w.getTilef(x, ceil(a.position.y + a.size.y) - subTileSize).solid()) {
 				return true;
 			}
 		}
 		for (float y = floor(a.position.y); y < ceil(a.position.y + a.size.y); y += subTileSize) {
-			if (w.getTilef(floor(a.position.x), y).flags == 1) {
+			if (w.getTilef(floor(a.position.x), y).solid()) {
 				return true;
 			}
-			if (w.getTilef(ceil(a.position.x + a.size.x) - subTileSize, y).flags == 1) {
+			if (w.getTilef(ceil(a.position.x + a.size.x) - subTileSize, y).solid()) {
 				return true;
 			}
 		}
