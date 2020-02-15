@@ -7,11 +7,22 @@ TabWidth: 4
 IndentWidth: 4
 MaxEmptyLinesToKeep: 2
 NamespaceIndentation: All
+FixNamespaceComments: true
 BreakBeforeBraces: Attach
 PointerBindsToType: true
-AllowShortFunctionsOnASingleLine: Empty
+AllowShortFunctionsOnASingleLine: Inline
+AllowShortCaseLabelsOnASingleLine: true
 AlignTrailingComments: true
 Cpp11BracedListStyle: false
+AlignAfterOpenBracket: DontAlign
+BinPackParameters: false
+BinPackArguments: false
+AllowAllParametersOfDeclarationOnNextLine: false
+AllowAllConstructorInitializersOnNextLine: false
+AllowAllArgumentsOnNextLine: false
+AlwaysBreakTemplateDeclarations: true
+BreakConstructorInitializers: BeforeColon
+BreakInheritanceList: BeforeColon
 
 IncludeCategories:
   - Regex:           '^"(llvm|llvm-c|clang|clang-c)/'

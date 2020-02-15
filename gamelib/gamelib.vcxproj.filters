@@ -81,6 +81,9 @@
     <ClInclude Include="gamelib_physics_component.hpp">
       <Filter>Header Files\components</Filter>
     </ClInclude>
+    <ClInclude Include="gamelib_font.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="gamelib.cpp">
@@ -136,6 +139,9 @@
     </ClCompile>
     <ClCompile Include="gamelib_physics_component.cpp">
       <Filter>Source Files\components</Filter>
+    </ClCompile>
+    <ClCompile Include="gamelib_font.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
