@@ -159,7 +159,6 @@
     <ClCompile Include="CollisionPhysicsComponent.cpp" />
     <ClCompile Include="ColumnActorComponent.cpp" />
     <ClCompile Include="ColumnGraphicsComponent.cpp" />
-    <ClCompile Include="Font.cpp" />
     <ClCompile Include="GingerbreadInputComponent.cpp" />
     <ClCompile Include="gingerrun.cpp" />
     <ClCompile Include="AlienInputComponent.cpp" />
@@ -169,7 +168,6 @@
     <ClInclude Include="CollisionPhysicsComponent.hpp" />
     <ClInclude Include="ColumnActorComponent.hpp" />
     <ClInclude Include="ColumnGraphicsComponent.hpp" />
-    <ClInclude Include="Font.hpp" />
     <ClInclude Include="AlienInputComponent.hpp" />
     <ClInclude Include="GingerbreadInputComponent.hpp" />
   </ItemGroup>
