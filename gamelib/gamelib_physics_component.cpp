@@ -191,21 +191,21 @@ namespace GameLib {
 	}
 
 	bool GameLib::DainNickJosephWorldPhysicsComponent::collideWorld(Actor& a, World& w) {
-
+		
 		float subTileSize = 1.0;
 		for (float x = floor(a.position.x); x < ceil(a.position.x + a.size.x); x += subTileSize) {
-			if (w.getTile(x, floor(a.position.y)).flags == 1) {
+			if (w.getTilef(x, floor(a.position.y)).flags == 1) {
 				return true;
 			}
-			if (w.getTile(x, ceil(a.position.y + a.size.y) - subTileSize).flags == 1) {
+			if (w.getTilef(x, ceil(a.position.y + a.size.y) - subTileSize).flags == 1) {
 				return true;
 			}
 		}
 		for (float y = floor(a.position.y); y < ceil(a.position.y + a.size.y); y += subTileSize) {
-			if (w.getTile(floor(a.position.x), y).flags == 1) {
+			if (w.getTilef(floor(a.position.x), y).flags == 1) {
 				return true;
 			}
-			if (w.getTile(ceil(a.position.x + a.size.x) - subTileSize, y).flags == 1) {
+			if (w.getTilef(ceil(a.position.x + a.size.x) - subTileSize, y).flags == 1) {
 				return true;
 			}
 		}

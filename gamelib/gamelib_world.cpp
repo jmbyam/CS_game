@@ -11,10 +11,10 @@ namespace GameLib {
 	ENUM(COLLIDE)                                                                                                      \
 	ENUM(NOCOLLIDE)
 #define ENUM_VAL(x) x,
-#define ENUM_MAP(x) {#x, Tiles::x},
+#define ENUM_MAP(x) { #x, Tiles::x },
 
 		enum class Tiles { WORLD_TOKENS(ENUM_VAL) };
-		std::map<std::string, Tiles> worldTokens{WORLD_TOKENS(ENUM_MAP)};
+		std::map<std::string, Tiles> worldTokens{ WORLD_TOKENS(ENUM_MAP) };
 		std::map<char, unsigned> mapCell{};
 		char nocollide = '.';
 	} // namespace Tokens
@@ -39,18 +39,18 @@ namespace GameLib {
 		collisionTiles.resize(numTiles * CollisionTileResolution);
 	}
 
-	void World::start() {
-		for (Actor* a : triggerActors) {
+	void World::start(float t) {
+		for (auto a : triggerActors) {
 			a->makeTrigger();
-			a->beginPlay();
+			a->beginPlay(t);
 		}
-		for (Actor* a : staticActors) {
+		for (auto a : staticActors) {
 			a->makeStatic();
-			a->beginPlay();
+			a->beginPlay(t);
 		}
-		for (Actor* a : dynamicActors) {
+		for (auto a : dynamicActors) {
 			a->makeDynamic();
-			a->beginPlay();
+			a->beginPlay(t);
 		}
 	}
 
@@ -60,12 +60,12 @@ namespace GameLib {
 				continue;
 			actor->update(deltaTime, *this);
 		}
-		for (auto& actor : staticActors) {
+		for (auto actor : staticActors) {
 			if (!actor->active)
 				continue;
 			actor->update(deltaTime, *this);
 		}
-		for (auto& actor : dynamicActors) {
+		for (auto actor : dynamicActors) {
 			if (!actor->active)
 				continue;
 			actor->update(deltaTime, *this);
@@ -73,18 +73,18 @@ namespace GameLib {
 	}
 
 	void World::physics(float deltaTime) {
-		for (auto& actor : staticActors) {
+		for (auto actor : staticActors) {
 			actor->physics(deltaTime, *this);
 		}
-		for (auto& actor : dynamicActors) {
+		for (auto actor : dynamicActors) {
 			if (!actor->active)
 				continue;
 			actor->physics(deltaTime, *this);
 		}
-	}
+	} // namespace GameLib
 
 	void World::draw(Graphics& graphics) {
-		for (auto& actor : staticActors) {
+		for (auto actor : staticActors) {
 			if (!actor->active || !actor->visible)
 				continue;
 			actor->draw(graphics);
@@ -101,17 +101,17 @@ namespace GameLib {
 		}
 	}
 
-	void World::addDynamicActor(Actor* a) {
+	void World::addDynamicActor(ActorPtr a) {
 		a->makeDynamic();
 		dynamicActors.push_back(a);
 	}
 
-	void World::addStaticActor(Actor* a) {
+	void World::addStaticActor(ActorPtr a) {
 		a->makeStatic();
 		staticActors.push_back(a);
 	}
 
-	void World::addTriggerActor(Actor* a) {
+	void World::addTriggerActor(ActorPtr a) {
 		a->makeTrigger();
 		triggerActors.push_back(a);
 	}

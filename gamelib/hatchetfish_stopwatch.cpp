@@ -24,16 +24,16 @@ namespace Hf {
 
     StopWatch::~StopWatch() {}
 
-    void StopWatch::Start() { start_timepoint = std::chrono::system_clock::now(); }
+    void StopWatch::start() { start_timepoint = std::chrono::system_clock::now(); }
 
-    void StopWatch::Stop() { end_timepoint = std::chrono::system_clock::now(); }
+    void StopWatch::stop() { end_timepoint = std::chrono::system_clock::now(); }
 
-    double StopWatch::GetSecondsElapsed() {
+    double StopWatch::getSecondsElapsed() {
         auto diff = end_timepoint - start_timepoint;
         return std::chrono::duration<double>(diff).count();
     }
 
-    double StopWatch::GetMillisecondsElapsed() {
+    double StopWatch::getMillisecondsElapsed() {
         auto diff = end_timepoint - start_timepoint;
         return std::chrono::duration<double, std::milli>(diff).count();
     }

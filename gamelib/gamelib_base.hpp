@@ -23,6 +23,7 @@
 #include <memory>
 #include <thread>
 #include <stdexcept>
+#include <type_traits>
 
 namespace GameLib {
     struct SPRITEINFO {

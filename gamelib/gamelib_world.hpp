@@ -21,6 +21,8 @@ namespace GameLib {
 	public:
 		Tile() {}
 		Tile(unsigned c) : charDesc(c) {}
+		// TODO: rename charDesc to id, add a new field charDesc
+		// Tile(unsigned id, char orig) : charDesc
 		static constexpr unsigned EMPTY = 0;
 		static constexpr unsigned SOLID = 1;
 		unsigned charDesc{ 0 };
@@ -28,6 +30,8 @@ namespace GameLib {
 	};
 
 	class Actor;
+	using ActorPtr = std::shared_ptr<Actor>;
+	using ActorWPtr = std::weak_ptr<Actor>;
 
 	// World represents a composite of Objects that live in a 2D grid world
 	class World : public Object {
@@ -37,20 +41,19 @@ namespace GameLib {
 
 		void resize(unsigned sizeX, unsigned sizeY);
 
-		void start();
+		void start(float t);
 		void update(float deltaTime);
 		void physics(float deltaTime);
 		void draw(Graphics& graphics);
 
 		void setTile(int x, int y, Tile ptr);
 		Tile& getTile(int x, int y);
-		const Tile& getTile(glm::vec3 p) const {
-			return getTile((int)p.x, (int)p.y);
-		}
+		const Tile& getTile(glm::vec3 p) const { return getTile((int)p.x, (int)p.y); }
 		const Tile& getTile(glm::vec3 p, int offsetX, int offsetY) const {
 			return getTile((int)p.x + offsetX, (int)p.y + offsetY);
 		}
 		const Tile& getTile(int x, int y) const;
+		const Tile& getTilef(float x, float y) const { return getTile(int(x), int(y)); }
 		int getCollisionTile(float x, float y) const;
 		void setCollisionTile(float x, float y, int value);
 
@@ -61,15 +64,15 @@ namespace GameLib {
 		std::vector<uint8_t> collisionTiles;
 
 		// Dynamic actors are solid actors with game logic
-		std::vector<Actor*> dynamicActors;
+		std::vector<ActorPtr> dynamicActors;
 		// Static actors are solid actors with no game logic
-		std::vector<Actor*> staticActors;
+		std::vector<ActorPtr> staticActors;
 		// Trigger actors are not solid
-		std::vector<Actor*> triggerActors;
+		std::vector<ActorPtr> triggerActors;
 
-		void addDynamicActor(Actor* a);
-		void addStaticActor(Actor* a);
-		void addTriggerActor(Actor* a);
+		void addDynamicActor(ActorPtr a);
+		void addStaticActor(ActorPtr a);
+		void addTriggerActor(ActorPtr a);
 
 		// number of tiles in the X direction
 		int worldSizeX{ WorldPagesX * WorldTilesX };

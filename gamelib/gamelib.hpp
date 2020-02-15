@@ -9,6 +9,7 @@
 #include <gamelib_locator.hpp>
 #include <gamelib_command.hpp>
 #include <gamelib_random.hpp>
+#include <gamelib_font.hpp>
 
 namespace GameLib {
 }

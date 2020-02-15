@@ -14,9 +14,18 @@ namespace GameLib {
 	class GraphicsComponent;
 	class ActorComponent;
 
+	using InputComponentPtr = std::shared_ptr<InputComponent>;
+	using ActorComponentPtr = std::shared_ptr<ActorComponent>;
+	using PhysicsComponentPtr = std::shared_ptr<PhysicsComponent>;
+	using GraphicsComponentPtr = std::shared_ptr<GraphicsComponent>;
+
 	class Actor : public Object {
 	public:
-		Actor(InputComponent* input, ActorComponent* actor, PhysicsComponent* physics, GraphicsComponent* graphics);
+		Actor() {}
+		Actor(InputComponentPtr input,
+			ActorComponentPtr actor,
+			PhysicsComponentPtr physics,
+			GraphicsComponentPtr graphics);
 		virtual ~Actor();
 
 		using weak_ptr = std::weak_ptr<Actor>;
@@ -25,29 +34,18 @@ namespace GameLib {
 		using const_shared_ptr = const std::shared_ptr<Actor>;
 
 		// returns id of the actor
-		unsigned getId() const {
-			return id_;
-		}
+		unsigned getId() const { return id_; }
+
 		// returns a character description of the actor which is for saving/loading
-		virtual char charDesc() const {
-			return charDesc_;
-		}
+		virtual char charDesc() const { return charDesc_; }
 
-		InputComponent* inputComponent() {
-			return input_;
-		}
-		ActorComponent* actorComponent() {
-			return actor_;
-		}
-		PhysicsComponent* physicsComponent() {
-			return physics_;
-		}
-		GraphicsComponent* graphicsComponent() {
-			return graphics_;
-		}
+		InputComponent* inputComponent() { return input_.get(); }
+		ActorComponent* actorComponent() { return actor_.get(); }
+		PhysicsComponent* physicsComponent() { return physics_.get(); }
+		GraphicsComponent* graphicsComponent() { return graphics_.get(); }
 
-		// Called whenever the object is introduced into the game
-		void beginPlay();
+		// Called whenever the object is introduced into the game, t is current time
+		void beginPlay(float t0);
 
 		// Called each frame the object needs to update itself before drawing
 		void update(float deltaTime, World& world);
@@ -58,10 +56,11 @@ namespace GameLib {
 		// Called each frame to draw itself (not called for invisible objects)
 		void draw(Graphics& graphics);
 
+		// Switches current animation, < 0 restarts current animation
+		void switchAnim(int i);
+
 		// Gets the world matrix for this actor which is transform * addlTransform
-		glm::mat4 worldMatrix() const {
-			return transform * addlTransform;
-		}
+		glm::mat4 worldMatrix() const { return transform * addlTransform; }
 
 		// Gets column 4 of the world matrix which is the local origin in world space
 		glm::vec3 worldPosition() const {
@@ -70,26 +69,124 @@ namespace GameLib {
 		}
 
 		// Gets the minimum bounds for this actor in world space, bbox is not rotated
-		glm::vec3 worldBBoxMin() const {
-			return worldPosition() + bboxMin;
-		}
+		glm::vec3 worldBBoxMin() const { return worldPosition() + bboxMin; }
 
 		// Gets the maximum bounds for this actor in world space, bbox is not rotated
-		glm::vec3 worldBBoxMax() const {
-			return worldPosition() + bboxMax;
-		}
+		glm::vec3 worldBBoxMax() const { return worldPosition() + bboxMax; }
 
 		using uint = unsigned;
 		using ushort = unsigned short;
 		using ubyte = unsigned char;
 		using ubool = unsigned short; // using short can avoid character integer issues
 
-		// sprite number for this object
-		uint spriteId{ 0 };
-		// sprite library number for this object
-		uint spriteLibId{ 0 };
-		bool spriteFlipX{ false };
-		bool spriteFlipY{ false };
+		// sprite name for this object (for non tile contexts)
+		std::string imageName;
+
+		struct SPRITEINFO {
+			// sprite number for this object
+			uint id{ 0 };
+			// sprite library number for this object
+			uint libId{ 0 };
+			bool flipX{ false };
+			bool flipY{ false };
+
+			int flipFlags() const {
+				if (flipX)
+					return 1;
+				if (flipY)
+					return 2;
+				return 0;
+			}
+		} sprite;
+
+		// get main sprite id
+		uint spriteId() const { return sprite.id; }
+		// get main sprite lib id
+		uint spriteLibId() const { return sprite.libId; }
+
+		// set main sprite id, configures anim sprite id if 0
+		uint setSprite(uint libId, uint id) {
+			if (anim.baseId == 0)
+				anim.baseId = id;
+			sprite.libId = libId;
+			sprite.id = id;
+			return id;
+		}
+
+		struct ANIMINFO {
+			int baseId{ 0 };
+			int count{ 1 };
+			float speed{ 8.0f };
+			enum { CYCLE, SINGLE, BOUNCE };
+			int type{ CYCLE };
+
+			// copies public members of ANIMINFO
+			ANIMINFO& operator=(const ANIMINFO& other) {
+				baseId = other.baseId;
+				count = other.count;
+				speed = other.speed;
+				type = other.type;
+				return *this;
+			}
+
+			// returns speed * (t1-t0)
+			int framesSinceStart() const { return static_cast<int>(speed * (t1 - t0)); }
+
+			// returns single shot frame within range [baseId, baseId + count)
+			int singleFrame() const { return std::min(baseId + count, baseId + framesSinceStart()); }
+
+			// returns cycling frame within range [basedId, baseId + count)
+			int cycleFrame() const {
+				if (!count)
+					return 0;
+				return baseId + framesSinceStart() % count;
+			}
+
+			// returns bounced frame within range [basedId, baseId + count)
+			int bounceFrame() const {
+				int c = count - 1;
+				int fss = framesSinceStart() % (c << 1);
+				return baseId + c - std::abs(fss - c);
+			}
+
+			int currentFrame() const {
+				switch (type) {
+				case CYCLE: return cycleFrame();
+				case SINGLE: return singleFrame();
+				case BOUNCE: return bounceFrame();
+				}
+				return cycleFrame();
+			}
+
+			// sets up quick animation data
+			void reset(int _baseId, int _count, float _speed, int _type = CYCLE) {
+				baseId = _baseId;
+				count = _count;
+				speed = _speed;
+			}
+
+			// sets animation to new start time
+			void start(float t) {
+				t0 = t;
+				t1 = t;
+			}
+
+			// returns whether animation has reached last frame
+			bool ended() const { return int(speed * (t1 - t0)) > count; }
+
+			// updates current time, returns current frame
+			int update(float dt) {
+				t1 += dt;
+				return currentFrame();
+			}
+
+		private:
+			float t0{ 0 };
+			float t1{ 0 };
+		} anim;
+
+		// use this to store animation sequences
+		std::vector<ANIMINFO> anims;
 
 		// is object visible for drawing
 		ubool visible{ true };
@@ -111,6 +208,8 @@ namespace GameLib {
 
 		// time elapsed for next update
 		float dt;
+		float t0; // time since start
+		float t1; // current time
 
 		// current position
 		glm::vec3 position{ 0.0f, 0.0f, 0.0f };
@@ -128,51 +227,50 @@ namespace GameLib {
 
 		struct PHYSICSINFO {
 			float mass{ 1.0f };
-			glm::vec3 v {0.0f,0.0f,0.0f};
+			glm::vec3 v{ 0.0f, 0.0f, 0.0f };
 			glm::vec3 v_t{ 0.0f, 0.0f, 0.0f };
 			glm::vec3 v_n{ 0.0f, 0.0f, 0.0f };
 		} physicsInfo;
 
 		struct TRIGGERINFO {
 			bool overlapping{ false };
-			Actor* triggerActor{ nullptr };
+			ActorWPtr triggerActor;
 		} triggerInfo;
 
 		enum { NONE = 0, DYNAMIC = 1, STATIC = 2, TRIGGER = 4 };
 
-		bool isDynamic() const {
-			return type_ == DYNAMIC;
-		}
-		bool isStatic() const {
-			return type_ == STATIC;
-		}
-		bool isTrigger() const {
-			return type_ == TRIGGER;
-		}
+		bool isDynamic() const { return type_ == DYNAMIC; }
+		bool isStatic() const { return type_ == STATIC; }
+		bool isTrigger() const { return type_ == TRIGGER; }
 
 		void makeDynamic();
 		void makeStatic();
 		void makeTrigger();
 
 	protected:
-		std::string _updateDesc() override {
-			return { "Actor" };
-		}
-		std::string _updateInfo() override {
-			return { "Actor" };
-		}
+		std::string _updateDesc() override { return { "Actor" }; }
+		std::string _updateInfo() override { return { "Actor" }; }
 		char charDesc_ = '?';
 		unsigned id_{ 0 };
 		int type_{ NONE };
 
 	private:
-		InputComponent* input_{ nullptr };
-		PhysicsComponent* physics_{ nullptr };
-		GraphicsComponent* graphics_{ nullptr };
-		ActorComponent* actor_{ nullptr };
+		InputComponentPtr input_;
+		ActorComponentPtr actor_;
+		PhysicsComponentPtr physics_;
+		GraphicsComponentPtr graphics_;
 
 		static unsigned idSource_;
-	};
+	}; // namespace GameLib
+
+	using ActorPtr = std::shared_ptr<Actor>;
+
+	template <class... U>
+	ActorPtr makeActor(const std::string& name, U&&... _Args) {
+		ActorPtr a = std::make_shared<Actor>(std::forward<U>(_Args)...);
+		a->rename(name);
+		return a;
+	}
 
 	inline bool collides(GameLib::Actor& a, GameLib::Actor& b) {
 		glm::vec3 amin = a.position;

@@ -3,26 +3,29 @@
 #include <gamelib_locator.hpp>
 
 namespace GameLib {
-	unsigned Actor::idSource_{0};
+	unsigned Actor::idSource_{ 0 };
 
-	Actor::Actor(InputComponent* input, ActorComponent* actor, PhysicsComponent* physics, GraphicsComponent* graphics)
+	Actor::Actor(InputComponentPtr input,
+		ActorComponentPtr actor,
+		PhysicsComponentPtr physics,
+		GraphicsComponentPtr graphics)
 		: transform(1.0f), addlTransform(1.0f), input_(input), actor_(actor), physics_(physics), graphics_(graphics) {
 		id_ = idSource_++;
 	}
 
-	Actor::~Actor() {
-		delete input_;
-		delete physics_;
-		delete graphics_;
-	}
+	Actor::~Actor() { HFLOGDEBUG("Deleting (%d) '%s'", id_, name().c_str()); }
 
-	void Actor::beginPlay() {
+	void Actor::beginPlay(float t) {
+		t0 = t;
+		t1 = t;
 		if (actor_)
 			actor_->beginPlay(*this);
 	}
 
 	void Actor::update(float deltaTime, World& world) {
 		dt = deltaTime;
+		t1 += dt;
+		anim.update(deltaTime);
 		if (input_)
 			input_->update(*this);
 		if (actor_)
@@ -38,25 +41,25 @@ namespace GameLib {
 			if (physics_->collideWorld(*this, world))
 				actor_->handleCollisionWorld(*this, world);
 
-			for (Actor* b : world.staticActors) {
-				if (this == b)
+			for (auto b : world.staticActors) {
+				if (this->getId() == b->getId())
 					continue;
 				if (physics_->collideStatic(*this, *b))
 					actor_->handleCollisionStatic(*this, *b);
 			}
 
-			for (Actor* b : world.dynamicActors) {
-				if (this == b)
+			for (auto b : world.dynamicActors) {
+				if (this->getId() == b->getId())
 					continue;
 				if (physics_->collideDynamic(*this, *b))
 					actor_->handleCollisionDynamic(*this, *b);
 			}
 
-			if (triggerInfo.overlapping && triggerInfo.triggerActor) {
-				Actor* trigger = triggerInfo.triggerActor;
+			if (triggerInfo.overlapping && triggerInfo.triggerActor.use_count()) {
+				auto trigger = triggerInfo.triggerActor.lock();
 				if (!physics_->collideTrigger(*this, *trigger)) {
 					triggerInfo.overlapping = false;
-					triggerInfo.triggerActor = nullptr;
+					triggerInfo.triggerActor.reset();
 					actor_->endOverlap(*this, *trigger);
 
 					if (trigger->actor_) {
@@ -65,8 +68,8 @@ namespace GameLib {
 					}
 				}
 			} else {
-				for (Actor* trigger : world.triggerActors) {
-					if (this == trigger)
+				for (auto trigger : world.triggerActors) {
+					if (this->getId() == trigger->getId())
 						continue;
 					if (!triggerInfo.overlapping && physics_->collideTrigger(*this, *trigger)) {
 						triggerInfo.overlapping = true;
@@ -88,15 +91,18 @@ namespace GameLib {
 			graphics_->draw(*this, graphics);
 	}
 
-	void Actor::makeDynamic() {
-		type_ = DYNAMIC;
+	void Actor::switchAnim(int i) {
+		if (i < 0 || i >= anims.size()) {
+			anim.start(t1);
+			return;
+		}
+		anim = anims[i];
+		anim.start(t1);
 	}
 
-	void Actor::makeStatic() {
-		type_ = STATIC;
-	}
+	void Actor::makeDynamic() { type_ = DYNAMIC; }
 
-	void Actor::makeTrigger() {
-		type_ = TRIGGER;
-	}
+	void Actor::makeStatic() { type_ = STATIC; }
+
+	void Actor::makeTrigger() { type_ = TRIGGER; }
 } // namespace GameLib

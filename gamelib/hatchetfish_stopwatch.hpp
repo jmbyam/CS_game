@@ -25,25 +25,25 @@
     {                                                                                                                                                          \
         Hf::StopWatch sw;                                                                                                                                      \
         timeexpression;                                                                                                                                        \
-        timevariable = sw.Stop_sf();                                                                                                                           \
+        timevariable = sw.stop_sf();                                                                                                                           \
     }
 #define HFCLOCKMSf(timevariable, timeexpression)                                                                                                               \
     {                                                                                                                                                          \
         Hf::StopWatch sw;                                                                                                                                      \
         timeexpression;                                                                                                                                        \
-        timevariable = sw.Stop_msf();                                                                                                                          \
+        timevariable = sw.stop_msf();                                                                                                                          \
     }
 #define HFCLOCKSd(timevariable, timeexpression)                                                                                                                \
     {                                                                                                                                                          \
         Hf::StopWatch sw;                                                                                                                                      \
         timeexpression;                                                                                                                                        \
-        timevariable = sw.Stop_s();                                                                                                                            \
+        timevariable = sw.stop_s();                                                                                                                            \
     }
 #define HFCLOCKMSd(timevariable, timeexpression)                                                                                                               \
     {                                                                                                                                                          \
         Hf::StopWatch sw;                                                                                                                                      \
         timeexpression;                                                                                                                                        \
-        timevariable = sw.Stop_ms();                                                                                                                           \
+        timevariable = sw.stop_ms();                                                                                                                           \
     }
 
 namespace Hf {
@@ -52,26 +52,26 @@ namespace Hf {
         StopWatch();
         ~StopWatch();
 
-        void Start();
-        void Stop();
-        double Stop_s() {
-            Stop();
-            return GetSecondsElapsed();
+        void start();
+        void stop();
+        double stop_s() {
+            stop();
+            return getSecondsElapsed();
         }
-        double Stop_ms() {
-            Stop();
-            return GetMillisecondsElapsed();
+        double stop_ms() {
+            stop();
+            return getMillisecondsElapsed();
         }
-        float Stop_sf() {
-            Stop();
-            return (float)GetSecondsElapsed();
+        float stop_sf() {
+            stop();
+            return (float)getSecondsElapsed();
         }
-        float Stop_msf() {
-            Stop();
-            return (float)GetMillisecondsElapsed();
+        float stop_msf() {
+            stop();
+            return (float)getMillisecondsElapsed();
         }
-        double GetMillisecondsElapsed();
-        double GetSecondsElapsed();
+        double getMillisecondsElapsed();
+        double getSecondsElapsed();
 
     private:
         std::chrono::time_point<std::chrono::system_clock> start_timepoint;

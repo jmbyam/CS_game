@@ -26,10 +26,10 @@ namespace GameLib {
 
 	 void InputComponentForDynamic::update(Actor& actor) {
         if (actor.position.x >= 0 && actor.position.x < 16) {
-            actor.velocity.x += 0.001;
+            actor.velocity.x += 0.001f;
             actor.velocity.y = 0;
         } else {
-            actor.velocity.x -= 0.001;
+            actor.velocity.x -= 0.001f;
             actor.velocity.y = 0;
         }
     }
