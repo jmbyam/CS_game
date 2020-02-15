@@ -217,7 +217,7 @@ int main(int argc, char** argv) {
 		//        GameLib::SPRITEINFO s;
 		//        s.position = { x * 32, y * 32 };
 		//        auto t = world.getTile(x, y);
-		//        context.drawTexture(s.position, 0, t.charDesc);
+		//        context.drawTexture(s.position, 0, t.spriteId);
 		//    }
 		//}
 

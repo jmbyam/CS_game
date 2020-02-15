@@ -20,12 +20,17 @@ namespace GameLib {
 	class Tile {
 	public:
 		Tile() {}
-		Tile(unsigned c) : charDesc(c) {}
-		// TODO: rename charDesc to id, add a new field charDesc
-		// Tile(unsigned id, char orig) : charDesc
+		Tile(unsigned id, char orig) : spriteId(id), charDesc(orig) {}
+
 		static constexpr unsigned EMPTY = 0;
-		static constexpr unsigned SOLID = 1;
-		unsigned charDesc{ 0 };
+		static constexpr unsigned SOLID_TL = 0x01;
+		static constexpr unsigned SOLID_TR = 0x02;
+		static constexpr unsigned SOLID_BL = 0x04;
+		static constexpr unsigned SOLID_BR = 0x08;
+		static constexpr unsigned SOLID = SOLID_TL | SOLID_TR | SOLID_BL | SOLID_BR;
+
+		char charDesc{ '?' };
+		unsigned spriteId{ 0 };
 		unsigned flags{ EMPTY };
 	};
 

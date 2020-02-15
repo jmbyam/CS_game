@@ -9,19 +9,17 @@ namespace GameLib {
 	ENUM(WORLD)                                                                                                        \
 	ENUM(DEFINE)                                                                                                       \
 	ENUM(COLLIDE)                                                                                                      \
-	ENUM(NOCOLLIDE)
+	ENUM(FLAGS)
 #define ENUM_VAL(x) x,
 #define ENUM_MAP(x) { #x, Tiles::x },
 
 		enum class Tiles { WORLD_TOKENS(ENUM_VAL) };
 		std::map<std::string, Tiles> worldTokens{ WORLD_TOKENS(ENUM_MAP) };
-		std::map<char, unsigned> mapCell{};
-		char nocollide = '.';
+		std::map<char, unsigned> charToTiles{};
+		std::map<char, unsigned> charToFlags{};
 	} // namespace Tokens
 
-	World::World() {
-		resize(worldSizeX, worldSizeY);
-	}
+	World::World() { resize(worldSizeX, worldSizeY); }
 
 	World::~World() {
 		tiles.clear();
@@ -165,6 +163,8 @@ namespace GameLib {
 		if (!Tokens::worldTokens.count(cmd))
 			return s;
 		Tokens::Tiles token = Tokens::worldTokens[cmd];
+		char c;
+		unsigned val;
 		switch (token) {
 		case Tokens::Tiles::WORLDSIZE:
 			unsigned w, h;
@@ -178,25 +178,30 @@ namespace GameLib {
 			for (int i = 0; i < worldSizeX; i++) {
 				char c;
 				s >> c;
-				unsigned val = c;
-				if (Tokens::mapCell.count(c))
-					val = Tokens::mapCell[val];
-				setTile(i, row, Tile(val));
-				getTile(i, row).flags = (c == Tokens::nocollide) ? Tile::EMPTY : Tile::SOLID;
+				unsigned tile = c;
+				if (Tokens::charToTiles.count(c)) {
+					tile = Tokens::charToTiles[tile];
+				}
+				setTile(i, row, Tile(tile, c));
+				
+				unsigned flags = Tile::SOLID;
+				if (Tokens::charToFlags.count(c)) {
+					flags = Tokens::charToFlags[c];
+				}
+				getTile(i, row).flags = flags;
 			}
 			break;
-		case Tokens::Tiles::NOCOLLIDE:
-			s >> Tokens::nocollide;
-			break;
-		case Tokens::Tiles::DEFINE:
-			char c;
-			unsigned val;
+		case Tokens::Tiles::FLAGS:
 			s >> c;
 			s >> val;
-			Tokens::mapCell[c] = val;
+			Tokens::charToFlags[c] = val;
 			break;
-		default:
-			HFLOGWARN("cmd '%' not implemented", cmd.c_str());
+		case Tokens::Tiles::DEFINE:
+			s >> c;
+			s >> val;
+			Tokens::charToTiles[c] = val;
+			break;
+		default: HFLOGWARN("cmd '%' not implemented", cmd.c_str());
 		}
 		return s;
 	}
@@ -241,7 +246,7 @@ namespace GameLib {
 		// world 4 #######################
 
 		std::map<unsigned int, char> cellToChar;
-		for (auto& [k, v] : Tokens::mapCell) {
+		for (auto& [k, v] : Tokens::charToTiles) {
 			s << "define " << k << " " << v;
 			cellToChar[v] = k;
 		}
@@ -251,10 +256,10 @@ namespace GameLib {
 			s << "world " << std::setw(2) << y << " ";
 			for (int x = 0; x < worldSizeX; ++x) {
 				auto t = getTile(x, y);
-				if (cellToChar.count(t.charDesc)) {
-					s << cellToChar[t.charDesc];
+				if (cellToChar.count(t.spriteId)) {
+					s << cellToChar[t.spriteId];
 				} else {
-					s << (char)t.charDesc;
+					s << (char)t.spriteId;
 				}
 			}
 			s << "\n";
