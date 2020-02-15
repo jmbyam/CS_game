@@ -16,14 +16,31 @@ namespace GameLib {
 		bool load(const std::string& path);
 		bool save(const std::string& path);
 
-		void setFont(const std::string& path, int which, float size = 2.0f);
-		void setFont(int which) { curFont_ = clamp(which, 0, MAX_FONTS - 1); }
+		static constexpr int HALIGN_LEFT = Font::HALIGN_LEFT;
+		static constexpr int HALIGN_CENTER = Font::HALIGN_CENTER;
+		static constexpr int HALIGN_RIGHT = Font::HALIGN_RIGHT;
+		static constexpr int VALIGN_TOP = Font::VALIGN_TOP;
+		static constexpr int VALIGN_BOTTOM = Font::VALIGN_BOTTOM;
+		static constexpr int VALIGN_CENTER = Font::VALIGN_CENTER;
+		static constexpr int SHADOWED = Font::SHADOWED;
 
-		void newFrame(int duration, int backColor, int textColor);
-		void frameHeader(const std::string& header, int color, int flags, int font);
-		void frameLine(const std::string& line);
+		// loads a font for use in the story screen, size should be set to 1 for ~1/25 height
+		void setFont(int font, const std::string& path, float size);
+		void setFontStyle(int font, int shadowed, int halign, int valign);
+
+		void setBlipSound(int blipSoundId) { blipSoundId_ = blipSoundId; }
+
+		void newFrame(int duration,
+			int headerColor,
+			int headerShadowColor,
+			int textColor,
+			int textShadowColor,
+			int backColor);
+		void frameHeader(int font, const std::string& header);
+		void frameLine(int font, const std::string& line);
 
 		// writes story screen to output stream
+		// this is in progress
 		// format:
 		// INT      numberOfActors
 		// ARRAY OF
@@ -84,12 +101,12 @@ namespace GameLib {
 			int duration{ 0 };		   // milliseconds
 			int backColor{ 0 };		   // LibXOR Color
 			int textColor{ 4 };		   // LibXOR Color
+			int textShadow{ 0 };	   // LibXOR Color
 			std::string headerText;	   // Big 2xPt header text
 			int headerColor{ 4 };	   // LibXOR Color
-			int headerFlags{ 0 };	   // Same as Font Flags
+			int headerShadow{ 0 };	   // LibXOR Color
 			int headerFont{ 0 };	   // Font index
 			int imageFlags{ 0 };	   //
-			int textFlags{ 0 };		   // 1 = LEFT, 2 = RIGHT, 3 = CENTER
 			int textFont{ 0 };		   // Font index
 			int animFlags{ 0 };		   //
 			glm::vec2 position1{ 0 };  // position 1 of sprite
@@ -113,7 +130,11 @@ namespace GameLib {
 		};
 
 		// editing variables
-		int curFont_{ 0 };
+		// int curFont_{ 0 };
+		int blipSoundId_{ 0 };
+
+		// playback variables
+		size_t lastCharsDrawn_{ 0 };
 
 		// dialogue variables
 		using dialogue_vector = std::vector<Dialogue>;
@@ -131,11 +152,32 @@ namespace GameLib {
 		float screenHeight;
 		bool donePlaying{ false };
 
-		std::vector<std::string> reflow;
+		std::vector<std::pair<int, std::string>> reflow;
+		struct LINEINFO {
+			int width{ 0 };
+			int height{ 0 };
+			int first{ 0 };
+			int count{ 0 };
+		};
+		// width of entire line, height, index of first token, number of tokens
+		std::vector<LINEINFO> reflowLines;
 
 		int ptsize{ 0 };
 		static constexpr int MAX_FONTS = 16;
-		std::unique_ptr<Font> fonts[MAX_FONTS];
+		struct FONTINFO {
+			std::unique_ptr<Font> font;
+			int ptsize{ 12 };
+			int spacew{ 10 };
+			int h{ 12 };
+			int shadow{ SHADOWED };
+			int halign{ HALIGN_LEFT };
+			int valign{ VALIGN_TOP };
+			int flags() const { return shadow | halign | valign; }
+			int calcWidth(const char* s) const { return font->calcWidth(s); }
+			int calcWidth(const std::string& s) const { return font->calcWidth(s.c_str()); }
+			void draw(int x, int y, const char* s, SDL_Color fg, SDL_Color bg) { font->draw(x, y, s, fg, bg, shadow); }
+			void draw(int x, int y, const std::string& s, SDL_Color fg, SDL_Color bg) { draw(x, y, s.c_str(), fg, bg); }
+		} fonts[MAX_FONTS];
 
 		void _advanceFrame(int frame);
 		void _updateFrame();

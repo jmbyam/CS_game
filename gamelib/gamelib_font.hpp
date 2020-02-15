@@ -6,15 +6,15 @@
 namespace GameLib {
 	class Font {
 	public:
-		static constexpr int HALIGN_LEFT = 0;
-		static constexpr int HALIGN_CENTER = 1 << 0;
-		static constexpr int HALIGN_RIGHT = 1 << 1;
-		static constexpr int VALIGN_TOP = 1 << 2;
-		static constexpr int VALIGN_CENTER = 1 << 3;
-		static constexpr int VALIGN_BOTTOM = 1 << 4;
-		static constexpr int SHADOWED = 1 << 5;
-		static constexpr int BOLD = 1 << 9;
-		static constexpr int ITALIC = 1 << 10;
+		static constexpr int HALIGN_LEFT = 1;
+		static constexpr int HALIGN_RIGHT = 2;
+		static constexpr int HALIGN_CENTER = HALIGN_LEFT | HALIGN_RIGHT;
+		static constexpr int VALIGN_TOP = 4;
+		static constexpr int VALIGN_BOTTOM = 8;
+		static constexpr int VALIGN_CENTER = VALIGN_TOP | VALIGN_BOTTOM;
+		static constexpr int SHADOWED = 16;
+		static constexpr int BOLD = 256;
+		static constexpr int ITALIC = 512;
 
 		// initialize new font using the specified context
 		Font(Context* context);
@@ -50,6 +50,7 @@ namespace GameLib {
 
 		// draw text to screen
 		void draw(int x, int y, const char* text, SDL_Color fg, int flags);
+		void draw(int x, int y, const char* text, SDL_Color fg, SDL_Color bg, int flags);
 
 	private:
 		Context* context_{ nullptr };

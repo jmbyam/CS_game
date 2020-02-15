@@ -12,18 +12,36 @@ namespace GameLib {
 		screenSize = std::min(screenWidth, screenHeight);
 		ptsize = (int)(screenSize / 25.0f);
 		for (auto i = 0; i < MAX_FONTS; ++i) {
-			fonts[i] = std::make_unique<Font>(context);
+			fonts[i].font = std::make_unique<Font>(context);
 		}
+		newFrame(0, 0, 0, 0, 0, 0);
 	}
 
 
-	void StoryScreen::setFont(const std::string& path, int which, float size) {
-		if (which < 0 || which >= MAX_FONTS)
+	void StoryScreen::setFont(int font, const std::string& path, float size) {
+		if (font < 0 || font >= MAX_FONTS)
 			return;
-		if (!fonts[which]->load(path, (int)size * ptsize)) {
+
+		FONTINFO& f = fonts[font];
+		f.ptsize = (int)std::floor(0.5f + size * ptsize);
+		if (!f.font->load(path, f.ptsize)) {
 			HFLOGERROR("Font '%s' not found", path.c_str())
 		}
-		curFont_ = which;
+		f.spacew = f.calcWidth(" ");
+		f.h = f.font->calcHeight();
+	}
+
+
+	void StoryScreen::setFontStyle(int font, int shadow, int halign, int valign) {
+		if (font < 0 || font >= MAX_FONTS)
+			return;
+		FONTINFO& f = fonts[font];
+		if (shadow & SHADOWED)
+			f.shadow = shadow & SHADOWED;
+		if (halign & HALIGN_CENTER)
+			f.halign = halign & HALIGN_CENTER;
+		if (halign & VALIGN_CENTER)
+			f.valign = valign & VALIGN_CENTER;
 	}
 
 
@@ -91,28 +109,33 @@ namespace GameLib {
 	}
 
 
-	void StoryScreen::newFrame(int duration, int backColor, int textColor) {
+	void StoryScreen::newFrame(int duration,
+		int headerColor,
+		int headerShadowColor,
+		int textColor,
+		int textShadowColor,
+		int backColor) {
 		Dialogue d;
 		d.duration = duration;
-		d.backColor = backColor;
+		d.headerColor = headerColor;
+		d.headerShadow = headerShadowColor;
 		d.textColor = textColor;
+		d.textShadow = textShadowColor;
+		d.backColor = backColor;
 		dialogue.push_back(d);
 	}
 
 
-	void StoryScreen::frameHeader(const std::string& text, int color, int flags, int font) {
+	void StoryScreen::frameHeader(int font, const std::string& text) {
 		Dialogue& d = dialogue.back();
 		d.headerText = text;
-		d.headerColor = color;
-		d.headerFlags = flags;
 		d.headerFont = clamp(font, 0, MAX_FONTS - 1);
 	}
 
 
-	void StoryScreen::frameLine(const std::string& line) {
+	void StoryScreen::frameLine(int font, const std::string& line) {
 		Dialogue& d = dialogue.back();
-		d.textFont = curFont_;
-		d.textFlags = Font::SHADOWED;
+		d.textFont = clamp(font, 0, MAX_FONTS - 1);
 		d.lines.push_back(line);
 	}
 
@@ -125,6 +148,7 @@ namespace GameLib {
 			return;
 		}
 		ticksLeft = dialogue[curframe].duration;
+		lastCharsDrawn_ = 0;
 		Dialogue& d = dialogue[curframe];
 		HFLOGDEBUG("Story frame %d for %d ticks", frame, ticksLeft);
 		HFLOGDEBUG("Story frame # %s", d.headerText.c_str());
@@ -157,18 +181,19 @@ namespace GameLib {
 
 		if (!d1.headerText.empty()) {
 			SDL_Color fg = mix(backColor, MakeColor(d1.headerColor), fgMix);
+			SDL_Color bg = mix(backColor, MakeColor(d1.headerShadow), fgMix);
 
 			int x = 0;
 			int y = 0;
-			if (d1.headerFlags & Font::HALIGN_RIGHT)
-				x = context->screenWidth;
-			if (d1.headerFlags & Font::HALIGN_CENTER)
-				x = context->screenWidth >> 1;
-			int which = d1.headerFont;
-			int flags = d1.headerFlags & 0xFF;
-			if (fgMix < 1.0f && flags & Font::SHADOWED)
-				flags = flags & ~Font::SHADOWED;
-			fonts[which]->draw(x, y, dialogue[curframe].headerText.c_str(), fg, flags);
+			int textWidth = context->screenWidth;
+			FONTINFO& f = fonts[d1.headerFont];
+			int w = f.calcWidth(d1.headerText);
+			switch (f.halign) {
+			case HALIGN_LEFT: x = 0; break;
+			case HALIGN_RIGHT: x = textWidth - w; break;
+			case HALIGN_CENTER: x = (textWidth - w) >> 1; break;
+			}
+			f.draw(x, y, dialogue[curframe].headerText, fg, bg);
 		}
 
 		// story text
@@ -178,50 +203,73 @@ namespace GameLib {
 			//	pct = framePct - 0.1f;
 			if (framePct > 0.9f)
 				pct = fgMix;
-			Font& f = *fonts[d1.textFont].get();
+			FONTINFO& f = fonts[d1.textFont];
 
 			SDL_Color fg = mix(backColor, MakeColor(d1.textColor), pct);
+			SDL_Color bg = mix(backColor, MakeColor(d1.textShadow), pct);
 
 			// N characters per tick
-			const int ticksPerChar = 50;
-			int adjTickCount = tickCount - d1.duration * 0.1f;
+			const int ticksPerChar = 25;
+			int adjTickCount = (int)(tickCount - d1.duration * 0.1f);
 			size_t charsDrawn = 0;
 			size_t maxChars = (size_t)(adjTickCount / ticksPerChar);
 			int xleft = context->screenWidth >> 2;
+			int xwidth = context->screenWidth >> 1;
+			int textTop = context->screenHeight >> 1;
+			int textBottom = context->screenHeight - 1;
+			int textHeight = textBottom - textTop;
 			int x = xleft;
-			int y = context->screenHeight >> 1;
-			int spacew = f.calcWidth(" ");
-			int fh = f.calcHeight();
-			for (auto line : reflow) {
-				if (line == "\n") {
-					y += fh;
-					x = xleft;
-					continue;
+			int y = textTop;
+			int yheight = (int)reflowLines.size() * f.h;
+			if (f.valign == VALIGN_BOTTOM) {
+				y += textHeight - yheight;
+			} else if (f.valign == VALIGN_CENTER) {
+				y += (textHeight - yheight) >> 1;
+			}
+			// for (auto& [tw, line] : reflow) {
+			for (const auto r : reflowLines) {
+				switch (f.halign) {
+				case HALIGN_LEFT: x = xleft; break;
+				case HALIGN_CENTER: x = xleft + ((xwidth - r.width) >> 1); break;
+				case HALIGN_RIGHT: x = xleft + xwidth - r.width; break;
 				}
-				size_t possibleChars = charsDrawn + line.size();
-				if (possibleChars < maxChars) {
-					int w = f.calcWidth(line.c_str());
-					f.draw(x, y, line.c_str(), fg, d1.textFlags & 0xFF);
-					charsDrawn += line.size();
-					x += spacew + w;
-				} else if (maxChars > charsDrawn) {
-					std::string sub = line.substr(0, maxChars - charsDrawn);
-					f.draw(x, y, sub.c_str(), fg, d1.textFlags & 0xFF);
-					charsDrawn += sub.size();
+				for (int i = r.first; i < r.first + r.count; i++) {
+					std::string& line = reflow[i].second;
+					int w = reflow[i].first;
+					if (line == "\n") {
+						continue;
+					}
+					size_t possibleChars = charsDrawn + line.size();
+					if (possibleChars < maxChars) {
+						f.draw(x, y, line, fg, bg);
+						charsDrawn += line.size();
+						x += f.spacew + w;
+					} else if (maxChars > charsDrawn) {
+						std::string sub = line.substr(0, maxChars - charsDrawn);
+						f.draw(x, y, sub, fg, bg);
+						charsDrawn += sub.size();
+					}
 				}
+				y += f.h;
+			}
+			if (lastCharsDrawn_ != charsDrawn) {
+				lastCharsDrawn_ = charsDrawn;
+				context->playAudioClip(blipSoundId_);
 			}
 		}
-	}
+	} // namespace GameLib
 
 
 	void StoryScreen::_reflowText(Dialogue& d) {
-		Font& f = *fonts[d.textFont].get();
-		int fh = f.height();
+		FONTINFO& f = fonts[d.textFont];
+		int fh = f.h;
 		reflow.clear();
-		reflow.reserve(200);
+		reflowLines.clear();
 		int maxWidth = context->screenWidth >> 1;
 		int x = 0;
-		int spacew = f.calcWidth(" ");
+		reflowLines.push_back({ 0, f.h, 0, 0 });
+		int first = 0;
+		int count = 0;
 		for (auto& line : d.lines) {
 			std::istringstream is(line);
 			while (is) {
@@ -229,16 +277,24 @@ namespace GameLib {
 				is >> s;
 				if (s.empty())
 					continue;
-				int w = f.calcWidth(s.c_str());
+				int tw = f.calcWidth(s);
+				int w = f.spacew + tw;
 				if (x + w > maxWidth) {
-					reflow.push_back("\n");
+					reflowLines.back() = { x, f.h, first, count };
+					reflowLines.push_back({ 0, f.h, 0, 0 });
+					first += count;
+					count = 0;
 					x = 0;
 				}
-				reflow.push_back(s);
-				x += w + spacew;
+				reflow.push_back({ tw, s });
+				x += w;
+				count++;
 			}
-			reflow.push_back("\n");
+			if (reflowLines.back().width != 0)
+				reflowLines.push_back({ 0, f.h, 0, 0 });
 		}
+		if (reflowLines.back().width == 0)
+			reflowLines.back() = { x, f.h, first, count };
 	}
 
 

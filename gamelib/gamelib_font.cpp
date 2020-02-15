@@ -42,9 +42,7 @@ namespace GameLib {
 	}
 
 
-	SDL_Texture* Font::lastRender() {
-		return texture_;
-	}
+	SDL_Texture* Font::lastRender() { return texture_; }
 
 	void Font::newRender() {
 		if (texture_) {
@@ -67,21 +65,27 @@ namespace GameLib {
 
 
 	int Font::calcHeight() const {
-		return TTF_FontHeight(font_);
+		if (font_)
+			return TTF_FontLineSkip(font_);
+		return 0;
 	}
 
 
-	void Font::draw(int x, int y, const char* text, SDL_Color fg, int flags) {
-		if (!font_) return;
-		if (flags & HALIGN_CENTER) {
+	void Font::draw(int x, int y, const char* text, SDL_Color fg, int flags) { draw(x, y, text, fg, Black, flags); }
+
+	void Font::draw(int x, int y, const char* text, SDL_Color fg, SDL_Color bg, int flags) {
+		if (!font_)
+			return;
+
+		if ((flags & HALIGN_CENTER) == HALIGN_CENTER) {
 			x -= calcWidth(text) >> 1;
-		} else if (flags & HALIGN_RIGHT) {
+		} else if (flags & HALIGN_RIGHT == HALIGN_RIGHT) {
 			x -= calcWidth(text);
 		}
-		if (flags & VALIGN_TOP) {
-		} else if (flags & VALIGN_CENTER) {
+
+		if ((flags & VALIGN_CENTER) == VALIGN_CENTER) {
 			y -= calcHeight() >> 1;
-		} else if (flags & VALIGN_BOTTOM) {
+		} else if ((flags & VALIGN_BOTTOM) == VALIGN_BOTTOM) {
 			y -= calcHeight();
 		}
 
@@ -94,9 +98,8 @@ namespace GameLib {
 		}
 		TTF_SetFontStyle(font_, style);
 
-
 		if (flags & SHADOWED) {
-			render(text, Black);
+			render(text, bg);
 			draw(x + 2, y + 2);
 		}
 		render(text, fg);
