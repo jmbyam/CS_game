@@ -28,9 +28,8 @@ namespace GameLib {
 				a.position.y = triggerInfo.position.y + std::sin(50.0f * triggerInfo.t) * 0.25f;
 				triggerInfo.t -= a.dt;
 				if (triggerInfo.t < 0.0f) {
-					HFLOGDEBUG("Actor '%d' going back to sprite %d", a.getId(), triggerInfo.oldSpriteId);
 					a.position = triggerInfo.position;
-					a.spriteId = triggerInfo.oldSpriteId;
+					a.anim.baseId = a.spriteId();
 				}
 			}
 		}
@@ -61,7 +60,7 @@ namespace GameLib {
 		}
 		a.position += a.velocity * collisionTime;
 		float timeLeft = 1.0f - collisionTime;
-		bool deflecting{false};
+		bool deflecting{ false };
 		if (deflecting) {
 			a.velocity.x *= timeLeft;
 			a.velocity.y *= timeLeft;
@@ -70,7 +69,7 @@ namespace GameLib {
 			if (std::abs(normal.y) > 0.0001f)
 				a.velocity.y = -a.velocity.y;
 		} else {
-			glm::vec3 tangent = {normal.y, normal.x, 0.0f};
+			glm::vec3 tangent = { normal.y, normal.x, 0.0f };
 			float cos_theta = glm::dot(a.velocity, tangent) * timeLeft;
 			a.velocity = cos_theta * tangent;
 		}
@@ -93,7 +92,7 @@ namespace GameLib {
 		}
 		a.position += a.velocity * collisionTime;
 		float timeLeft = 1.0f - collisionTime;
-		bool deflecting{true};
+		bool deflecting{ true };
 		if (deflecting) {
 			a.velocity.x *= timeLeft;
 			a.velocity.y *= timeLeft;
@@ -102,7 +101,7 @@ namespace GameLib {
 			if (std::abs(normal.y) > 0.0001f)
 				a.velocity.y = -a.velocity.y;
 		} else {
-			glm::vec3 tangent = {normal.y, normal.x, 0.0f};
+			glm::vec3 tangent = { normal.y, normal.x, 0.0f };
 			float cos_theta = glm::dot(a.velocity, tangent) * timeLeft;
 			a.velocity = cos_theta * tangent;
 		}
@@ -293,12 +292,10 @@ namespace GameLib {
 		HFLOGDEBUG("Trigger actor '%d' is now overlapped by actor '%d'", a.getId(), b.getId());
 		if (triggerInfo.t <= 0.0f) {
 			// if we are not already animating
-			triggerInfo.oldSpriteId = a.spriteId;
-			a.spriteId = a.spriteId + 50;
+			a.anim.baseId = a.spriteId() + 50;
 		}
 		triggerInfo.position = a.position;
 		triggerInfo.t = 2.0f;
-		HFLOGDEBUG("Actor '%d' is now using  sprite %d", a.getId(), a.spriteId);
 		b.position.x = 1 + random.positive() * (Locator::getWorld()->worldSizeX - 2);
 		b.position.y = 1 + random.positive() * (Locator::getWorld()->worldSizeY - 2);
 		Locator::getAudio()->playAudio(1, true);

@@ -27,7 +27,6 @@ namespace GameLib {
 		} staticInfo;
 
 		struct TRIGGERINFO {
-			int oldSpriteId{0};
 			glm::vec3 position;
 			float t{0.0f};
 		} triggerInfo;
