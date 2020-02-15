@@ -7,6 +7,8 @@ include_directories(${gamelib_SOURCE_DIR}/../gamelib)
 add_executable(simplegame
     main.cpp
     DungeonActorComponent.cpp
+    NewtonPhysicsComponent.cpp
+    Game.cpp
     )
 target_link_libraries(simplegame gamelib)
 

@@ -23,8 +23,12 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 if(UNIX AND NOT APPLE)
     set(LINUX TRUE)
 endif()
+
 if(LINUX)
-    set(CMAKE_CXX_COMPILER "/bin/g++-9")
+set(GCC_EXPECTED_VERSION 9.0.0)
+if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS GCC_EXPECTED_VERSION)
+    message("Using GCC 9 will have the best results")
+endif()
 endif()
 
 add_subdirectory(gamelib)
