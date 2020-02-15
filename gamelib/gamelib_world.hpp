@@ -78,6 +78,7 @@ namespace GameLib {
 		// Trigger actors are not solid
 		std::vector<ActorPtr> triggerActors;
 
+	public:
 		void addDynamicActor(ActorPtr a);
 		void addStaticActor(ActorPtr a);
 		void addTriggerActor(ActorPtr a);

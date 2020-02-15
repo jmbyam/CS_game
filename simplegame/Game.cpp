@@ -1,6 +1,7 @@
 #include "Game.hpp"
 #include "DungeonActorComponent.hpp"
 #include "NewtonPhysicsComponent.hpp"
+#include <gamelib_story_screen.hpp>
 
 void Game::init() {
 	GameLib::Locator::provide(&context);
@@ -183,7 +184,45 @@ void Game::initLevel(int levelNum) {
 }
 
 
-void Game::showIntro() {}
+void Game::showIntro() {
+	GameLib::StoryScreen ss;
+	if (!ss.load("dialog.txt")) {
+		// do something default
+		ss.setFont("fonts-japanese-mincho.ttf", 0, 2.0f);
+		ss.setFont("fonts-japanese-mincho.ttf", 1, 1.0f);
+		ss.setFont("LiberationSans-BoldItalic.ttf", 2, 2.0f);
+		ss.newFrame(1000, 0, 4);
+		ss.newFrame(15000, 1, 4);
+		ss.frameHeader("CENTERED Simple Game", 3, GameLib::Font::HALIGN_CENTER | GameLib::Font::SHADOWED, 0);
+		ss.setFont(1);
+		ss.frameLine("Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.");
+		ss.newFrame(1000, 0, 4);
+		ss.newFrame(15000, 8, 2);
+		ss.frameHeader("LEFT Radical Game", 3, GameLib::Font::HALIGN_LEFT, 0);
+		ss.setFont(1);
+		ss.frameLine("ABCDEFGHIJKLMNOPQRSTUVWXYZ");
+		ss.frameLine("ABCDEFGHIJKLMNOPQRSTUVWXYZ");
+		ss.frameLine("ABCDEFGHIJKLMNOPQRSTUVWXYZ");
+		ss.frameLine("ABCDEFGHIJKLMNOPQRSTUVWXYZ");
+		ss.frameLine("ABCDEFGHIJKLMNOPQRSTUVWXYZ");
+		ss.frameLine("ABCDEFGHIJKLMNOPQRSTUVWXYZ");
+		ss.frameLine("ABCDEFGHIJKLMNOPQRSTUVWXYZ");
+		ss.newFrame(10000, 12, 3);
+		ss.frameHeader("RIGHT Amazing Game", 3, GameLib::Font::HALIGN_RIGHT | GameLib::Font::SHADOWED, 1);
+		ss.setFont(1);
+		ss.frameLine("ABCDEFGHIJKLMNOPQRSTUVWXYZ");
+		ss.frameLine("abcdefghijklmnopqrstuvwxyz");
+		ss.frameLine("ABCDEFGHIJKLMNOPQRSTUVWXYZ");
+		ss.frameLine("ABCDEFGHIJKLMNOPQRSTUVWXYZ");
+		ss.frameLine("ABCDEFGHIJKLMNOPQRSTUVWXYZ");
+		ss.frameLine("ABCDEFGHIJKLMNOPQRSTUVWXYZ");
+		ss.frameLine("ABCDEFGHIJKLMNOPQRSTUVWXYZ");
+		ss.newFrame(10000, 13, 4);
+		ss.frameHeader("RIGHT Amazing Game", 3, GameLib::Font::HALIGN_RIGHT, 2);
+		ss.newFrame(10000, 0, 3);
+	}
+	ss.play();
+}
 
 
 void Game::showWonEnding() {}

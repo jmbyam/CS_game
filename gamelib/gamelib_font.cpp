@@ -72,6 +72,7 @@ namespace GameLib {
 
 
 	void Font::draw(int x, int y, const char* text, SDL_Color fg, int flags) {
+		if (!font_) return;
 		if (flags & HALIGN_CENTER) {
 			x -= calcWidth(text) >> 1;
 		} else if (flags & HALIGN_RIGHT) {

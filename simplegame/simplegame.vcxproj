@@ -21,7 +21,6 @@
   <ItemGroup>
     <ClCompile Include="DungeonActorComponent.cpp" />
     <ClCompile Include="Game.cpp" />
-    <ClCompile Include="gamelib_story_screen.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="NewtonPhysicsComponent.cpp" />
   </ItemGroup>
@@ -32,7 +31,6 @@
     <ClInclude Include="Commands.hpp" />
     <ClInclude Include="DungeonActorComponent.hpp" />
     <ClInclude Include="Game.hpp" />
-    <ClInclude Include="gamelib_story_screen.hpp" />
     <ClInclude Include="NewtonPhysicsComponent.hpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">

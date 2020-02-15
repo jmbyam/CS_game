@@ -21,9 +21,6 @@
     <ClCompile Include="DungeonActorComponent.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="gamelib_story_screen.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="NewtonPhysicsComponent.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -36,9 +33,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="DungeonActorComponent.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="gamelib_story_screen.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="NewtonPhysicsComponent.hpp">

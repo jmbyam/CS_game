@@ -13,8 +13,8 @@ namespace GameLib {
 		static constexpr int VALIGN_CENTER = 1 << 3;
 		static constexpr int VALIGN_BOTTOM = 1 << 4;
 		static constexpr int SHADOWED = 1 << 5;
-		static constexpr int BOLD = 1 << 6;
-		static constexpr int ITALIC = 1 << 7;
+		static constexpr int BOLD = 1 << 9;
+		static constexpr int ITALIC = 1 << 10;
 
 		// initialize new font using the specified context
 		Font(Context* context);
@@ -41,13 +41,9 @@ namespace GameLib {
 		int calcHeight() const;
 
 		// returns the height of the rendered string
-		int height() const {
-			return rect_.h;
-		}
+		int height() const { return rect_.h; }
 		// returns the width of the renderered string
-		int width() const {
-			return rect_.w;
-		}
+		int width() const { return rect_.w; }
 
 		// draw prerendered text to screen
 		void draw(int x, int y);

@@ -173,6 +173,7 @@
     <ClInclude Include="gamelib_locator.hpp" />
     <ClInclude Include="gamelib_physics_component.hpp" />
     <ClInclude Include="gamelib_random.hpp" />
+    <ClInclude Include="gamelib_story_screen.hpp" />
     <ClInclude Include="gamelib_world.hpp" />
     <ClInclude Include="hatchetfish.hpp" />
     <ClInclude Include="hatchetfish_log.hpp" />
@@ -195,6 +196,7 @@
     <ClCompile Include="gamelib_object.cpp" />
     <ClCompile Include="gamelib_physics_component.cpp" />
     <ClCompile Include="gamelib_random.cpp" />
+    <ClCompile Include="gamelib_story_screen.cpp" />
     <ClCompile Include="gamelib_world.cpp" />
     <ClCompile Include="hatchetfish_log.cpp" />
     <ClCompile Include="hatchetfish_stopwatch.cpp" />

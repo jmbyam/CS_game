@@ -4,77 +4,86 @@
 #include <gamelib_base.hpp>
 
 namespace GameLib {
-    class Actor;
+	class Actor;
 
-    class Command {
-    public:
-        virtual ~Command() {}
+	class Command {
+	public:
+		virtual ~Command() {}
 
-        virtual const char* type() const { return "Command"; }
-    };
+		virtual const char* type() const { return "Command"; }
+	};
 
-    class NormalCommand : public Command {
-    public:
-        virtual ~NormalCommand() {}
+	class NormalCommand : public Command {
+	public:
+		virtual ~NormalCommand() {}
 
-        const char* type() const override { return "NormalCommand"; }
+		const char* type() const override { return "NormalCommand"; }
 
-        virtual void execute() {}
-        virtual void undo() {}
-    };
+		virtual void execute() {}
+		virtual void undo() {}
+	};
 
-    class InputCommand : public Command {
-    public:
-        virtual ~InputCommand() {}
+	class InputCommand : public Command {
+	public:
+		virtual ~InputCommand() {}
 
-        // virtual method to process an input button where amount is in the range -1 to 1
-        // for axes and 0 to 1 for buttons. If method returns true, then event is considered
-        // one time
-        virtual bool execute(float amount) {
-            amount_ = amount;
-            return true;
-        }
+		// virtual method to process an input button where amount is in the range -1 to 1
+		// for axes and 0 to 1 for buttons. If method returns true, then event is considered
+		// one time
+		virtual bool execute(float amount) {
+			amount_ = amount;
+			return true;
+		}
 
-        float getAmount() const { return amount_; }
-    private:
-        float amount_;
-    };
+		float getAmount() const { return amount_; }
 
-    class ActorCommand : public Command {
-    public:
-        virtual ~ActorCommand() {}
+		operator bool() const { return amount_ != 0.0f; }
 
-        const char* type() const override { return "ActorCommand"; }
+		bool checkClear() {
+			bool notzero = (amount_ != 0.0f);
+			amount_ = 0.0f;
+			return notzero;
+		}
 
-        virtual void execute(Actor& actor) {}
-        virtual void undo(Actor& actor) {}
-    };
+	private:
+		float amount_;
+	};
 
-    template <typename CommandBaseType>
-    class CommandFlyweight {
-    public:
-        void addCommand(CommandBaseType* command) {
-            if (!command)
-                return;
-            commands[command->type()] = command;
-        }
+	class ActorCommand : public Command {
+	public:
+		virtual ~ActorCommand() {}
 
-        CommandBaseType* getCommand(CommandBaseType* command) {
-            if (!command)
-                return nullptr;
-            return isCommand(command->type()) ? commands[command->type()] : nullptr;
-        }
+		const char* type() const override { return "ActorCommand"; }
 
-        bool isCommand(const std::string& type) const { return commands.count(type) != 0; }
+		virtual void execute(Actor& actor) {}
+		virtual void undo(Actor& actor) {}
+	};
 
-        std::map<std::string, CommandBaseType*> commands;
-    };
+	template <typename CommandBaseType>
+	class CommandFlyweight {
+	public:
+		void addCommand(CommandBaseType* command) {
+			if (!command)
+				return;
+			commands[command->type()] = command;
+		}
 
-    using NormalCommandFlyweight = CommandFlyweight<NormalCommand>;
-    using ActorCommandFlyweight = CommandFlyweight<ActorCommand>;
+		CommandBaseType* getCommand(CommandBaseType* command) {
+			if (!command)
+				return nullptr;
+			return isCommand(command->type()) ? commands[command->type()] : nullptr;
+		}
 
-    extern NormalCommandFlyweight normalCommands;
-    extern ActorCommandFlyweight actorCommands;
-}
+		bool isCommand(const std::string& type) const { return commands.count(type) != 0; }
+
+		std::map<std::string, CommandBaseType*> commands;
+	};
+
+	using NormalCommandFlyweight = CommandFlyweight<NormalCommand>;
+	using ActorCommandFlyweight = CommandFlyweight<ActorCommand>;
+
+	extern NormalCommandFlyweight normalCommands;
+	extern ActorCommandFlyweight actorCommands;
+} // namespace GameLib
 
 #endif
