@@ -103,6 +103,9 @@ namespace GameLib {
 			float d{ 0.05f };				 // air resistance
 			glm::vec3 v_wind;				 // wind velocity
 		} worldPhysicsInfo;
+
+	protected:
+		virtual void _draw(Graphics& g);
 	};
 } // namespace GameLib
 

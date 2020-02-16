@@ -59,6 +59,25 @@ namespace GameLib {
 		// Switches current animation, < 0 restarts current animation
 		void switchAnim(int i);
 
+		// Get world pixel position of the actor's upper left coordinates
+		glm::ivec2 pixelPosition(Graphics& g) {
+			return { (int)(g.getTileSizeX() * position.x), (int)(g.getTileSizeY() * position.y) };
+		}
+
+		// Get pixel size of the actor
+		glm::ivec2 pixelSize(Graphics& g) {
+			return { (int)(g.getTileSizeX() * size.x), (int)(g.getTileSizeY() * size.y) };
+		}
+
+		// Return the center position of the actor's
+		glm::ivec2 pixelCenter(Graphics& g) {
+			glm::ivec4 rect{ (int)(g.getTileSizeX() * position.x),
+				(int)(g.getTileSizeY() * position.y),
+				(int)(g.getTileSizeX() * size.x),
+				(int)(g.getTileSizeY() * size.y) };
+			return { rect.x + (rect.z >> 1), rect.y + (rect.w >> 1) };
+		}
+
 		// Gets the world matrix for this actor which is transform * addlTransform
 		glm::mat4 worldMatrix() const { return transform * addlTransform; }
 

@@ -82,6 +82,8 @@ namespace GameLib {
 	} // namespace GameLib
 
 	void World::draw(Graphics& graphics) {
+		_draw(graphics);
+
 		for (auto actor : staticActors) {
 			if (!actor->active || !actor->visible)
 				continue;
@@ -183,7 +185,7 @@ namespace GameLib {
 					tile = Tokens::charToTiles[tile];
 				}
 				setTile(i, row, Tile(tile, c));
-				
+
 				unsigned flags = Tile::SOLID;
 				if (Tokens::charToFlags.count(c)) {
 					flags = Tokens::charToFlags[c];
@@ -265,5 +267,16 @@ namespace GameLib {
 			s << "\n";
 		}
 		return s;
+	}
+
+	void World::_draw(Graphics& g) {
+		for (int x = 0; x < worldSizeX; x++) {
+			for (int y = 0; y < worldSizeY; y++) {
+				GameLib::SPRITEINFO s;
+				s.position = { x * 32, y * 32 };
+				Tile& t = getTile(x, y);
+				g.draw(0, t.spriteId, s.position.x, s.position.y);
+			}
+		}
 	}
 } // namespace GameLib

@@ -3,6 +3,7 @@
 
 #include "Commands.hpp"
 #include <gamelib.hpp>
+#include "Commands.hpp"
 
 class Game {
 public:
@@ -17,6 +18,7 @@ public:
 
 	// return true if game won, false if game lost
 	virtual bool playGame();
+	virtual void updateCamera();
 	virtual void updateWorld();
 	virtual void drawWorld();
 	virtual void drawHUD();
@@ -30,6 +32,13 @@ public:
 protected:
 	virtual void startTiming();
 	virtual void updateTiming();
+
+	void shake();
+	void shake(int amount, float endShakeTime, float shakedt);
+	float shakeDt{ 0 };
+	float nextShakeTime{ 0 };
+	float endShakeTime{ 0 };
+	int shakeAmount{ 0 };
 
 	static constexpr float MS_PER_UPDATE = 0.001f;
 
@@ -53,6 +62,7 @@ protected:
 	float lag{ 0 };
 	std::vector<GameLib::ActorPtr> actorPool;
 
+	GameLib::InputCommand shakeCommand;
 	QuitCommand quitCommand;
 	MovementCommand xaxisCommand;
 	MovementCommand yaxisCommand;

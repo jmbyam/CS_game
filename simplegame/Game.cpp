@@ -29,6 +29,7 @@ void Game::init() {
 	input.key5 = &playMusic1;
 	input.key6 = &playMusic2;
 	input.key7 = &playMusic3;
+	input.start = &shakeCommand;
 	input.axis1X = &xaxisCommand;
 	input.axis1Y = &yaxisCommand;
 }
@@ -63,7 +64,7 @@ void Game::loadData() {
 	}
 	SDL_Texture* testPNG = context.loadImage("godzilla.png");
 	SDL_Texture* testJPG = context.loadImage("parrot.jpg");
-	graphics.setTileSize(32, 32);
+	graphics.setTileSize({ 32, 32 });
 	int spriteCount = context.loadTileset(0, 32, 32, "Tiles32x32.png");
 	if (!spriteCount) {
 		HFLOGWARN("Tileset not found");
@@ -106,7 +107,7 @@ void Game::initLevel(int levelNum) {
 	float speed = (float)graphics.getTileSizeX();
 
 	GameLib::ActorPtr actor;
-	actor = _makeActor(cx - 6, cy, 4, 2, NewInput(), NewDungeonActor(), NewNewtonPhysics(), NewGraphics());
+	actor = _makeActor(cx - 6, cy, 16, 2, NewInput(), NewDungeonActor(), NewNewtonPhysics(), NewGraphics());
 	world.addDynamicActor(actor);
 
 	actor = _makeActor(cx + 6, cy + 4, 4, 32, nullptr, NewDungeonActor(), NewPhysics(), NewGraphics());
@@ -315,10 +316,34 @@ void Game::updateTiming() {
 }
 
 
+void Game::shake() {
+	if (nextShakeTime > endShakeTime)
+		return;
+	nextShakeTime += shakeDt;
+	using GameLib::random;
+	glm::ivec2 screenShake{ random.between(-shakeAmount, shakeAmount), random.between(-shakeAmount, shakeAmount) };
+	graphics.setOffset(screenShake);
+}
+
+
+void Game::shake(int amount, float timeLength, float dt) {
+	if (amount == 0) {
+		graphics.setOffset({ 0, 0 });
+		return;
+	}
+	shakeAmount = amount;
+	endShakeTime = t1 + timeLength;
+	nextShakeTime = t1 + dt;
+	shakeDt = dt;
+	shake();
+}
+
+
 bool Game::playGame() {
 	stopwatch.start();
 	startTiming();
 	world.start(t0);
+	graphics.setCenter(graphics.origin());
 	bool gameWon = false;
 	bool gameOver = false;
 	while (!context.quitRequested && !gameOver) {
@@ -333,6 +358,8 @@ bool Game::playGame() {
 			lag -= Game::MS_PER_UPDATE;
 		}
 
+		shake();
+		updateCamera();
 		context.clearScreen(backColor);
 		drawWorld();
 		drawHUD();
@@ -346,6 +373,16 @@ bool Game::playGame() {
 }
 
 
+void Game::updateCamera() {
+	glm::ivec2 xy = world.dynamicActors[0]->pixelCenter(graphics);
+	glm::ivec2 center = graphics.center();
+	center.x = GameLib::clamp(center.x, xy.x - 100, xy.x + 100);
+	center.y = GameLib::clamp(center.y, xy.y - 100, xy.y + 100);
+	center.y = std::min(graphics.getCenterY(), center.y);
+	graphics.setCenter(center);
+}
+
+
 void Game::updateWorld() {
 	world.update(Game::MS_PER_UPDATE);
 	world.physics(Game::MS_PER_UPDATE);
@@ -353,15 +390,6 @@ void Game::updateWorld() {
 
 
 void Game::drawWorld() {
-	for (int x = 0; x < world.worldSizeX; x++) {
-		for (int y = 0; y < world.worldSizeY; y++) {
-			GameLib::SPRITEINFO s;
-			s.position = { x * 32, y * 32 };
-			auto t = world.getTile(x, y);
-			context.drawTexture(s.position, 0, t.spriteId);
-		}
-	}
-
 	world.draw(graphics);
 }
 
@@ -406,5 +434,9 @@ void Game::_debugKeys() {
 		if (!world.load(worldPath)) {
 			HFLOGWARN("world.txt not found");
 		}
+	}
+
+	if (shakeCommand.checkClear()) {
+		shake(4, 5, 50 * MS_PER_UPDATE);
 	}
 }
