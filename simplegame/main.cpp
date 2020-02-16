@@ -53,3 +53,46 @@ void testSprites(GameLib::Context& context,
 	context.drawTexture({ 50, 0 }, { 100, 100 }, testPNG);
 	context.drawTexture({ 250, 250 }, { 100, 100 }, testJPG);
 }
+
+void testColors() {
+	std::ofstream cout("colors.csv");
+	std::vector<std::string> cnames = { "BLACK",
+		"GRAY33",
+		"GRAY67",
+		"WHITE",
+		"RED",
+		"ORANGE",
+		"YELLOW",
+		"GREEN",
+		"CYAN",
+		"AZURE",
+		"BLUE",
+		"VIOLET",
+		"ROSE",
+		"BROWN",
+		"GOLD",
+		"FORESTGREEN" };
+	cout << "index,color,shift,negative,name,code,r,g,b\n";
+	int index = 0;
+	for (int k = 0; k < 2; k++) {
+		for (int j = 0; j < 4; j++) {
+			for (int i = 0; i < 16; i++) {
+				SDL_Color color = GameLib::MakeColor(i, 0, 0, j, 0, k);
+				cout << index << ",";
+				cout << i << ",";
+				cout << j << ",";
+				cout << k << ",";
+				cout << cnames[i];
+				switch (j) {
+				case 1: cout << "_H075_"; break;
+				case 2: cout << "_H015"; break;
+				case 3: cout << "_COMPLEMENT"; break;
+				}
+				cout << (k ? "_INVERSE" : "");
+				cout << "," << i + (j << 4) + (k << 7) << ",";
+				cout << (int)color.r << "," << (int)color.g << "," << (int)color.b << "\n";
+				index++;
+			}
+		}
+	}
+}

@@ -160,6 +160,9 @@ namespace GameLib {
 
 
 	void StoryScreen::_drawFrame() {
+		int prevframe = curframe - 1;
+		if (prevframe < 0)
+			prevframe = 0;
 		int nextframe = curframe + 1;
 		if (nextframe >= dialogue.size())
 			nextframe = curframe;
@@ -173,7 +176,7 @@ namespace GameLib {
 		float bgMix = framePct > 0.9f ? 1.0f - fgMix : 0.0f;
 
 		Dialogue& d1 = dialogue[curframe];
-		Dialogue& d2 = dialogue[nextframe];
+		Dialogue& d2 = dialogue[framePct < 0.5f ? prevframe : nextframe];
 		SDL_Color color1 = MakeColor(d1.backColor);
 		SDL_Color color2 = MakeColor(d2.backColor);
 		SDL_Color backColor = mix(color1, color2, bgMix);
@@ -208,11 +211,9 @@ namespace GameLib {
 			SDL_Color fg = mix(backColor, MakeColor(d1.textColor), pct);
 			SDL_Color bg = mix(backColor, MakeColor(d1.textShadow), pct);
 
-			// N characters per tick
-			const int ticksPerChar = 25;
 			int adjTickCount = (int)(tickCount - d1.duration * 0.1f);
 			size_t charsDrawn = 0;
-			size_t maxChars = (size_t)(adjTickCount / ticksPerChar);
+			size_t maxChars = (size_t)(adjTickCount / TICKS_PER_CHAR);
 			int xleft = context->screenWidth >> 2;
 			int xwidth = context->screenWidth >> 1;
 			int textTop = context->screenHeight >> 1;
@@ -227,29 +228,32 @@ namespace GameLib {
 				y += (textHeight - yheight) >> 1;
 			}
 			// for (auto& [tw, line] : reflow) {
+			std::string substr;
+			substr.reserve(200);
 			for (const auto r : reflowLines) {
 				switch (f.halign) {
 				case HALIGN_LEFT: x = xleft; break;
 				case HALIGN_CENTER: x = xleft + ((xwidth - r.width) >> 1); break;
 				case HALIGN_RIGHT: x = xleft + xwidth - r.width; break;
 				}
-				for (int i = r.first; i < r.first + r.count; i++) {
-					std::string& line = reflow[i].second;
-					int w = reflow[i].first;
-					if (line == "\n") {
-						continue;
-					}
-					size_t possibleChars = charsDrawn + line.size();
-					if (possibleChars < maxChars) {
-						f.draw(x, y, line, fg, bg);
-						charsDrawn += line.size();
-						x += f.spacew + w;
-					} else if (maxChars > charsDrawn) {
-						std::string sub = line.substr(0, maxChars - charsDrawn);
-						f.draw(x, y, sub, fg, bg);
-						charsDrawn += sub.size();
-					}
+				// for (int i = r.first; i < r.first + r.count; i++) {
+				const std::string& line = r.line; // reflow[i].second;
+				// int w = reflow[i].first;
+				if (line.empty()) {
+					y += f.h;
+					continue;
 				}
+				size_t possibleChars = charsDrawn + line.size();
+				if (possibleChars < maxChars) {
+					f.draw(x, y, line, fg, bg);
+					charsDrawn += line.size();
+					// x += f.spacew + w;
+				} else if (maxChars > charsDrawn) {
+					substr = line.substr(0, maxChars - charsDrawn);
+					f.draw(x, y, substr, fg, bg);
+					charsDrawn += substr.size();
+				}
+				//}
 				y += f.h;
 			}
 			if (lastCharsDrawn_ != charsDrawn) {
@@ -270,6 +274,8 @@ namespace GameLib {
 		reflowLines.push_back({ 0, f.h, 0, 0 });
 		int first = 0;
 		int count = 0;
+		std::string totalLine;
+		totalLine.reserve(200);
 		for (auto& line : d.lines) {
 			std::istringstream is(line);
 			while (is) {
@@ -280,13 +286,18 @@ namespace GameLib {
 				int tw = f.calcWidth(s);
 				int w = f.spacew + tw;
 				if (x + w > maxWidth) {
-					reflowLines.back() = { x, f.h, first, count };
+					reflowLines.back() = { x, f.h, first, count, totalLine };
 					reflowLines.push_back({ 0, f.h, 0, 0 });
 					first += count;
 					count = 0;
+					totalLine.clear();
+					totalLine.reserve(200);
+
 					x = 0;
 				}
 				reflow.push_back({ tw, s });
+				totalLine.append(" ");
+				totalLine.append(s);
 				x += w;
 				count++;
 			}
@@ -294,7 +305,7 @@ namespace GameLib {
 				reflowLines.push_back({ 0, f.h, 0, 0 });
 		}
 		if (reflowLines.back().width == 0)
-			reflowLines.back() = { x, f.h, first, count };
+			reflowLines.back() = { x, f.h, first, count, totalLine };
 	}
 
 

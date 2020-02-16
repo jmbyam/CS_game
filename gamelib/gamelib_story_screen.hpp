@@ -16,6 +16,9 @@ namespace GameLib {
 		bool load(const std::string& path);
 		bool save(const std::string& path);
 
+		// N characters per tick
+		static constexpr int TICKS_PER_CHAR = 50;
+
 		static constexpr int HALIGN_LEFT = Font::HALIGN_LEFT;
 		static constexpr int HALIGN_CENTER = Font::HALIGN_CENTER;
 		static constexpr int HALIGN_RIGHT = Font::HALIGN_RIGHT;
@@ -158,6 +161,7 @@ namespace GameLib {
 			int height{ 0 };
 			int first{ 0 };
 			int count{ 0 };
+			std::string line;
 		};
 		// width of entire line, height, index of first token, number of tokens
 		std::vector<LINEINFO> reflowLines;

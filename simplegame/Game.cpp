@@ -188,7 +188,7 @@ void Game::initLevel(int levelNum) {
 
 
 void Game::showIntro() {
-	//context.playMusicClip(0);
+	// context.playMusicClip(0);
 	GameLib::StoryScreen ss;
 	ss.setBlipSound(SOUND_BLIP);
 	if (!ss.load("dialog.txt")) {
@@ -208,9 +208,9 @@ void Game::showIntro() {
 		ss.setFontStyle(5, 0, ss.HALIGN_LEFT, ss.VALIGN_BOTTOM);
 		ss.setFontStyle(6, 0, ss.HALIGN_LEFT, ss.VALIGN_TOP);
 
-		ss.newFrame(5000, 0, 3, 4, 2, 3);
+		ss.newFrame(5000, GameLib::BLACK, 3, 4, 2, GameLib::WHITE);
 		ss.frameLine(3, "Powered by the ABCD...LMNOP Engine");
-		ss.newFrame(20000, 0, 3, 4, 2, 6);
+		ss.newFrame(20000, GameLib::BLACK, 3, GameLib::RED, 2, GameLib::YELLOW);
 		ss.frameHeader(0, "Simple Game");
 		ss.frameLine(3,
 			"Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et "
@@ -219,8 +219,8 @@ void Game::showIntro() {
 			"fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt "
 			"mollit anim id est laborum.");
 		ss.frameLine(3, "ABCDEFGHIJKLMNOPQRSTUVWXYZ");
-		ss.newFrame(1000, 4, 4, 4, 4, 4);
-		ss.newFrame(5000, 8, 2, 5, 9, 10);
+		ss.newFrame(5000, 4, 4, 4, 4, GameLib::RED);
+		ss.newFrame(10000, 8, 2, 5, 9, GameLib::BLUE);
 		ss.frameHeader(1, "Radical Game");
 		ss.frameLine(4,
 			"Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et "
@@ -231,7 +231,7 @@ void Game::showIntro() {
 		ss.frameLine(4, "ABCDEFGHIJKLMNOPQRSTUVWXYZ");
 		ss.frameLine(4, "abcdefghijklmnopqrstuvwxyz");
 		ss.frameLine(4, "`~!@#$%^&*()_+-=[]\\{}|;':\",./<>?");
-		ss.newFrame(20000, 8, 2, 5, 9, 12);
+		ss.newFrame(10000, 8, 2, 5, 9, GameLib::ROSE);
 		ss.frameHeader(2, "Amazing Game");
 		ss.frameLine(5,
 			"Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et "
@@ -242,7 +242,7 @@ void Game::showIntro() {
 		ss.frameLine(5, "ABCDEFGHIJKLMNOPQRSTUVWXYZ");
 		ss.frameLine(5, "abcdefghijklmnopqrstuvwxyz");
 		ss.frameLine(5, "`~!@#$%^&*()_+-=[]\\{}|;':\",./<>?");
-		ss.newFrame(10000, 8, 2, 5, 9, 10);
+		ss.newFrame(10000, 8, 2, 5, 9, GameLib::GOLD);
 		ss.frameHeader(0, "Cool Game");
 		ss.frameLine(6,
 			"Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et "
