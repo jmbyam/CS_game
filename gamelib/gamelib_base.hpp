@@ -317,12 +317,24 @@ namespace GameLib {
 		return { r, g, b, 255 };
 	}
 
+	constexpr int ComposeColor(int color1, int color2, int mix, int shift1, int shift2, int neg) {
+		int color = color1 & 0xF;
+		color |= ((color2 & 0xF) << 4);
+		color |= ((mix & 0x7) << 8);
+		color |= ((shift1 & 0x3) << 11);
+		color |= ((shift2&0x3)<<13);
+		color |= ((neg&0x1)<<15);
+		return color;
+	}
+
 	inline SDL_Color MakeColor(int c) {
 		int color1 = (c >> 0) & 0xF;
 		int color2 = (c >> 4) & 0xF;
 		int mix = (c >> 8) & 0x7;
-		bool neg = (c >> 12) & 0x1;
-		return MakeColor(color1, color2, mix, neg);
+		int shift1 = (c >> 11) & 0x03;
+		int shift2 = (c >> 13) & 0x03;
+		int neg = (c >> 15) & 0x1;
+		return MakeColor(color1, color2, mix, shift1, shift2, neg);
 	}
 
 	inline SDL_Color mix(SDL_Color a, SDL_Color b, float mix) {

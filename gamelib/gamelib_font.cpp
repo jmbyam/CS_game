@@ -79,7 +79,7 @@ namespace GameLib {
 
 		if ((flags & HALIGN_CENTER) == HALIGN_CENTER) {
 			x -= calcWidth(text) >> 1;
-		} else if (flags & HALIGN_RIGHT == HALIGN_RIGHT) {
+		} else if ((flags & HALIGN_RIGHT) == HALIGN_RIGHT) {
 			x -= calcWidth(text);
 		}
 
