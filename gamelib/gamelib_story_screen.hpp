@@ -183,9 +183,50 @@ namespace GameLib {
 			void draw(int x, int y, const std::string& s, SDL_Color fg, SDL_Color bg) { draw(x, y, s.c_str(), fg, bg); }
 		} fonts[MAX_FONTS];
 
+		struct TEXTRECT {
+			int windowX{ 0 };
+			int windowY{ 0 };
+			int windowW{ 0 };
+			int windowH{ 0 };
+			int x{ 0 };
+			int y{ 0 };
+
+			void reset(int ix, int iy, int iw, int ih, int border) {
+				windowX = ix + border;
+				windowY = iy + border;
+				windowW = iw - (border << 1);
+				windowH = ih - (border << 1);
+			}
+
+			void calcx(int halign, int textW) {
+				x = 0;
+				switch (halign) {
+				case HALIGN_LEFT: x = 0; break;
+				case HALIGN_RIGHT: x = windowW - textW; break;
+				case HALIGN_CENTER: x = (windowW - textW) >> 1; break;
+				}
+				x += windowX;
+			}
+
+			void calcy(int valign, int textH) {
+				y = 0;
+				switch (valign) {
+				case VALIGN_TOP: y = 0; break;
+				case VALIGN_BOTTOM: y += windowH - textH; break;
+				case VALIGN_CENTER: y += (windowH - textH) >> 1; break;
+				}
+				y += windowY;
+			}
+
+			void calc(int halign, int valign, int textW, int textH) {
+				calcx(halign, textW);
+				calcy(valign, textH);
+			}
+		};
+
 		void _advanceFrame(int frame);
 		void _updateFrame();
-		void _drawFrame();
+		virtual void _drawFrame();
 		void _reflowText(Dialogue& d);
 	};
 

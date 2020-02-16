@@ -40,10 +40,9 @@ namespace GameLib {
 			f.shadow = shadow & SHADOWED;
 		if (halign & HALIGN_CENTER)
 			f.halign = halign & HALIGN_CENTER;
-		if (halign & VALIGN_CENTER)
+		if (valign & VALIGN_CENTER)
 			f.valign = valign & VALIGN_CENTER;
 	}
-
 
 	void StoryScreen::play() {
 		curframe = 0;
@@ -160,108 +159,94 @@ namespace GameLib {
 
 
 	void StoryScreen::_drawFrame() {
+		// determine frame and fade frame
 		int prevframe = curframe - 1;
 		if (prevframe < 0)
 			prevframe = 0;
 		int nextframe = curframe + 1;
 		if (nextframe >= dialogue.size())
 			nextframe = curframe;
+		Dialogue& frame = dialogue[curframe];
+		Dialogue& fadeFrame = dialogue[framePct < 0.5f ? prevframe : nextframe];
 
-		float fgMix = 1.0f;
+		// determine curves
+
+		// frameCurve ramps up to 1, then back down
+		float frameCurve = 1.0f;
 		if (framePct < 0.1f)
-			fgMix = framePct * 10.0f;
+			frameCurve = framePct * 10.0f;
 		if (framePct > 0.9f)
-			fgMix = 1.0f - (framePct - 0.9f) * 10.0f;
-		fgMix = clamp(fgMix, 0.0f, 1.0f);
-		float bgMix = framePct > 0.9f ? 1.0f - fgMix : 0.0f;
+			frameCurve = 1.0f - (framePct - 0.9f) * 10.0f;
+		frameCurve = clamp(frameCurve, 0.0f, 1.0f);
 
-		Dialogue& d1 = dialogue[curframe];
-		Dialogue& d2 = dialogue[framePct < 0.5f ? prevframe : nextframe];
-		SDL_Color color1 = MakeColor(d1.backColor);
-		SDL_Color color2 = MakeColor(d2.backColor);
-		SDL_Color backColor = mix(color1, color2, bgMix);
+		// fadeCurve is 0, then ramps up to 1
+		float fadeCurve = framePct > 0.9f ? 1.0f - frameCurve : 0.0f;
+		// textFade is 1, then ramps down to 0
+		float inverseFadeCurve = 1.0f - fadeCurve;
+
+		// determine colors based on curves
+
+		SDL_Color color1 = MakeColor(frame.backColor);
+		SDL_Color color2 = MakeColor(fadeFrame.backColor);
+		SDL_Color backColor = mix(color1, color2, fadeCurve);
+		SDL_Color headerFG = mix(backColor, MakeColor(frame.headerColor), frameCurve);
+		SDL_Color headerBG = mix(backColor, MakeColor(frame.headerShadow), frameCurve);
+		SDL_Color textFG = mix(backColor, MakeColor(frame.textColor), inverseFadeCurve);
+		SDL_Color textBG = mix(backColor, MakeColor(frame.textShadow), inverseFadeCurve);
 		context->clearScreen(backColor);
 
-		if (!d1.headerText.empty()) {
-			SDL_Color fg = mix(backColor, MakeColor(d1.headerColor), fgMix);
-			SDL_Color bg = mix(backColor, MakeColor(d1.headerShadow), fgMix);
-
-			int x = 0;
-			int y = 0;
-			int textWidth = context->screenWidth;
-			FONTINFO& f = fonts[d1.headerFont];
-			int w = f.calcWidth(d1.headerText);
-			switch (f.halign) {
-			case HALIGN_LEFT: x = 0; break;
-			case HALIGN_RIGHT: x = textWidth - w; break;
-			case HALIGN_CENTER: x = (textWidth - w) >> 1; break;
-			}
-			f.draw(x, y, dialogue[curframe].headerText, fg, bg);
+		if (!frame.headerText.empty()) {
+			FONTINFO& f = fonts[frame.headerFont];
+			int w = f.calcWidth(frame.headerText);
+			TEXTRECT tr;
+			tr.reset(0, 0, context->screenWidth, context->screenHeight >> 1, 10);
+			tr.calc(f.halign, f.valign, w, f.h);
+			f.draw(tr.x, tr.y, dialogue[curframe].headerText, headerFG, headerBG);
 		}
 
 		// story text
 		if (framePct > 0.1f) {
-			float pct = 1.0f;
-			// if (framePct < 0.2f)
-			//	pct = framePct - 0.1f;
-			if (framePct > 0.9f)
-				pct = fgMix;
-			FONTINFO& f = fonts[d1.textFont];
-
-			SDL_Color fg = mix(backColor, MakeColor(d1.textColor), pct);
-			SDL_Color bg = mix(backColor, MakeColor(d1.textShadow), pct);
-
-			int adjTickCount = (int)(tickCount - d1.duration * 0.1f);
+			int adjTickCount = (int)(tickCount - frame.duration * 0.1f);
 			size_t charsDrawn = 0;
 			size_t maxChars = (size_t)(adjTickCount / TICKS_PER_CHAR);
-			int xleft = context->screenWidth >> 2;
-			int xwidth = context->screenWidth >> 1;
-			int textTop = context->screenHeight >> 1;
-			int textBottom = context->screenHeight - 1;
-			int textHeight = textBottom - textTop;
-			int x = xleft;
-			int y = textTop;
-			int yheight = (int)reflowLines.size() * f.h;
-			if (f.valign == VALIGN_BOTTOM) {
-				y += textHeight - yheight;
-			} else if (f.valign == VALIGN_CENTER) {
-				y += (textHeight - yheight) >> 1;
-			}
-			// for (auto& [tw, line] : reflow) {
+
+			FONTINFO& f = fonts[frame.textFont];
+			TEXTRECT tr;
+			tr.reset(context->screenWidth >> 2,
+				context->screenHeight >> 1,
+				context->screenWidth >> 1,
+				context->screenHeight >> 1,
+				10);
+			tr.calcy(f.valign, (int)reflowLines.size() * f.h);
+
 			std::string substr;
 			substr.reserve(200);
 			for (const auto r : reflowLines) {
-				switch (f.halign) {
-				case HALIGN_LEFT: x = xleft; break;
-				case HALIGN_CENTER: x = xleft + ((xwidth - r.width) >> 1); break;
-				case HALIGN_RIGHT: x = xleft + xwidth - r.width; break;
-				}
-				// for (int i = r.first; i < r.first + r.count; i++) {
-				const std::string& line = r.line; // reflow[i].second;
-				// int w = reflow[i].first;
-				if (line.empty()) {
-					y += f.h;
+				tr.calcx(f.halign, r.width);
+				if (r.line.empty()) {
+					tr.y += f.h;
 					continue;
 				}
-				size_t possibleChars = charsDrawn + line.size();
+				size_t possibleChars = charsDrawn + r.line.size();
 				if (possibleChars < maxChars) {
-					f.draw(x, y, line, fg, bg);
-					charsDrawn += line.size();
-					// x += f.spacew + w;
+					f.draw(tr.x, tr.y, r.line, textFG, textBG);
+					charsDrawn += r.line.size();
 				} else if (maxChars > charsDrawn) {
-					substr = line.substr(0, maxChars - charsDrawn);
-					f.draw(x, y, substr, fg, bg);
+					substr = r.line.substr(0, maxChars - charsDrawn);
+					f.draw(tr.x, tr.y, substr, textFG, textBG);
 					charsDrawn += substr.size();
 				}
-				//}
-				y += f.h;
+				tr.y += f.h;
 			}
+
+			// play sound effects
+
 			if (lastCharsDrawn_ != charsDrawn) {
 				lastCharsDrawn_ = charsDrawn;
 				context->playAudioClip(blipSoundId_);
 			}
 		}
-	} // namespace GameLib
+	}
 
 
 	void StoryScreen::_reflowText(Dialogue& d) {

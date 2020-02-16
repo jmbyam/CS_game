@@ -200,9 +200,9 @@ void Game::showIntro() {
 		ss.setFont(4, "LiberationSans-Regular.ttf", 1.0f);
 		ss.setFont(5, "fonts-japanese-gothic.ttf", 1.0f);
 		ss.setFont(6, "fonts-japanese-gothic.ttf", 0.5f);
-		ss.setFontStyle(0, 1, ss.HALIGN_RIGHT, ss.VALIGN_TOP);
+		ss.setFontStyle(0, 1, ss.HALIGN_RIGHT, ss.VALIGN_BOTTOM);
 		ss.setFontStyle(1, 0, ss.HALIGN_CENTER, ss.VALIGN_CENTER);
-		ss.setFontStyle(2, 1, ss.HALIGN_LEFT, ss.VALIGN_BOTTOM);
+		ss.setFontStyle(2, 1, ss.HALIGN_LEFT, ss.VALIGN_TOP);
 		ss.setFontStyle(3, 0, ss.HALIGN_CENTER, ss.VALIGN_CENTER);
 		ss.setFontStyle(4, 1, ss.HALIGN_RIGHT, ss.VALIGN_CENTER);
 		ss.setFontStyle(5, 0, ss.HALIGN_LEFT, ss.VALIGN_BOTTOM);
@@ -259,10 +259,24 @@ void Game::showIntro() {
 }
 
 
-void Game::showWonEnding() {}
+void Game::showWonEnding() {
+}
 
 
-void Game::showLostEnding() {}
+void Game::showLostEnding() {
+	GameLib::StoryScreen ss;
+	ss.setBlipSound(SOUND_BLIP);
+	ss.setFont(0, "URWClassico-Bold.ttf", 2.0f);
+	ss.setFont(1, "URWClassico-Bold.ttf", 1.0f);
+	ss.setFontStyle(0, 1, ss.HALIGN_CENTER, ss.VALIGN_BOTTOM);
+	ss.setFontStyle(1, 0, ss.HALIGN_CENTER, ss.VALIGN_CENTER);
+	ss.newFrame(1000, 0, 0, 0, 0, GameLib::BLACK);
+	ss.newFrame(5000, GameLib::BLACK, 3, GameLib::RED, 2, GameLib::YELLOW);
+	ss.frameHeader(0, "The End");
+	ss.frameLine(1, "Oh! This game must not be finished!");
+	ss.newFrame(0, 0, 0, 0, 0, GameLib::BLACK);
+	ss.play();
+}
 
 
 void Game::startTiming() {
