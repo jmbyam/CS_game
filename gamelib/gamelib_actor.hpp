@@ -59,15 +59,25 @@ namespace GameLib {
 		// Switches current animation, < 0 restarts current animation
 		void switchAnim(int i);
 
+		// returns position as a 2D point
+		glm::vec2 position2d() const { return { position.x, position.y }; }
+
+		// returns size as a 2D vector
+		glm::vec2 size2d() const { return { size.x, size.y }; }
+
 		// Get world pixel position of the actor's upper left coordinates
-		glm::ivec2 pixelPosition(Graphics& g) {
-			return { (int)(g.getTileSizeX() * position.x), (int)(g.getTileSizeY() * position.y) };
+		glm::ivec2 pixelPosition(Graphics& g) { return static_cast<glm::ivec2>(g.tileSizef() * position2d()); }
+
+		// returns pixel minimum coordinates (xy * tileSize)
+		glm::ivec2 pixelmin(Graphics& g) { return static_cast<glm::ivec2>(g.tileSizef() * position2d()); }
+
+		// returns pixel maximum coordinates (xy * tilesSize - 1)
+		glm::ivec2 pixelmax(Graphics& g) {
+			return static_cast<glm::ivec2>(g.tileSizef() * (position2d() + size2d())) - glm::ivec2(1);
 		}
 
 		// Get pixel size of the actor
-		glm::ivec2 pixelSize(Graphics& g) {
-			return { (int)(g.getTileSizeX() * size.x), (int)(g.getTileSizeY() * size.y) };
-		}
+		glm::ivec2 pixelSize(Graphics& g) { return static_cast<glm::ivec2>(g.tileSizef() * size2d()); }
 
 		// Return the center position of the actor's
 		glm::ivec2 pixelCenter(Graphics& g) {
@@ -78,27 +88,16 @@ namespace GameLib {
 			return { rect.x + (rect.z >> 1), rect.y + (rect.w >> 1) };
 		}
 
-		// Gets the world matrix for this actor which is transform * addlTransform
-		glm::mat4 worldMatrix() const { return transform * addlTransform; }
-
-		// Gets column 4 of the world matrix which is the local origin in world space
-		glm::vec3 worldPosition() const {
-			glm::mat4 w = worldMatrix();
-			return glm::vec3{ w[3][0], w[3][1], w[3][2] };
-		}
-
-		// Gets the minimum bounds for this actor in world space, bbox is not rotated
-		glm::vec3 worldBBoxMin() const { return worldPosition() + bboxMin; }
-
-		// Gets the maximum bounds for this actor in world space, bbox is not rotated
-		glm::vec3 worldBBoxMax() const { return worldPosition() + bboxMax; }
-
 		using uint = unsigned;
 		using ushort = unsigned short;
 		using ubyte = unsigned char;
 		using ubool = unsigned short; // using short can avoid character integer issues
 
-		// sprite name for this object (for non tile contexts)
+		////////////////////////////////////////////////////
+		// IMAGES AND SPRITES //////////////////////////////
+		////////////////////////////////////////////////////
+
+		// image name for this object (for non tile contexts)
 		std::string imageName;
 
 		struct SPRITEINFO {
@@ -131,6 +130,10 @@ namespace GameLib {
 			sprite.id = id;
 			return id;
 		}
+
+		////////////////////////////////////////////////////
+		// ANIMATION ///////////////////////////////////////
+		////////////////////////////////////////////////////
 
 		struct ANIMINFO {
 			int baseId{ 0 };
@@ -207,6 +210,10 @@ namespace GameLib {
 		// use this to store animation sequences
 		std::vector<ANIMINFO> anims;
 
+		////////////////////////////////////////////////////
+		// FLAGS ///////////////////////////////////////////
+		////////////////////////////////////////////////////
+
 		// is object visible for drawing
 		ubool visible{ true };
 		// is actor active for updating
@@ -216,32 +223,65 @@ namespace GameLib {
 		// is object unable to move
 		ubool movable{ true };
 
-		// transform that takes this object to world space
-		glm::mat4 transform;
-		// additional transform that moves this object in local space
-		glm::mat4 addlTransform;
-		// minimum coordinates for this bounding box in local space
-		glm::vec3 bboxMin;
-		// maximum coordinates for this bounding box in world space
-		glm::vec3 bboxMax;
+		////////////////////////////////////////////////////
+		// 3D GRAPHICS SUPPORT (EXPERIMENTAL) //////////////
+		////////////////////////////////////////////////////
+
+		struct _3DINFO {
+			// transform that takes this object to world space
+			glm::mat4 transform;
+			// additional transform that moves this object in local space
+			glm::mat4 addlTransform;
+			// minimum coordinates for this bounding box in local space
+			glm::vec3 bboxMin;
+			// maximum coordinates for this bounding box in world space
+			glm::vec3 bboxMax;
+
+			// Gets the world matrix for this actor which is transform * addlTransform
+			glm::mat4 worldMatrix() const { return transform * addlTransform; }
+
+			// Gets column 4 of the world matrix which is the local origin in world space
+			glm::vec3 worldPosition() const {
+				glm::mat4 w = worldMatrix();
+				return glm::vec3{ w[3][0], w[3][1], w[3][2] };
+			}
+
+			// Gets the minimum bounds for this actor in world space, bbox is not rotated
+			glm::vec3 worldBBoxMin() const { return worldPosition() + bboxMin; }
+
+			// Gets the maximum bounds for this actor in world space, bbox is not rotated
+			glm::vec3 worldBBoxMax() const { return worldPosition() + bboxMax; }
+		} _3d;
+
+		////////////////////////////////////////////////////
+		// TIMING INFORMATION //////////////////////////////
+		////////////////////////////////////////////////////
 
 		// time elapsed for next update
 		float dt;
 		float t0; // time since start
 		float t1; // current time
 
-		// current position
+		////////////////////////////////////////////////////
+		// POSITION AND VELOCITY ///////////////////////////
+		////////////////////////////////////////////////////
+
+		// current position (in world units)
 		glm::vec3 position{ 0.0f, 0.0f, 0.0f };
 		glm::vec3 lastPosition{ 0.0f, 0.0f, 0.0f };
 		glm::vec3 dPosition{ 0.0f, 0.0f, 0.0f };
 
-		// size (assume 1 = grid size)
+		// size (in world units, assume 1 = grid size)
 		glm::vec3 size{ 1.0f, 1.0f, 1.0f };
 
-		// current velocity
+		glm::vec3 min() const { return position; }
+		glm::vec3 max() const { return position + size; }
+		glm::vec3 center() const { return position + size * 0.5f; }
+
+		// current velocity (in world units)
 		glm::vec3 velocity{ 0.0f, 0.0f, 0.0f };
 
-		// maximum speed
+		// maximum speed (in world units)
 		float speed{ 1.0f };
 
 		struct PHYSICSINFO {
@@ -250,6 +290,10 @@ namespace GameLib {
 			glm::vec3 v_t{ 0.0f, 0.0f, 0.0f };
 			glm::vec3 v_n{ 0.0f, 0.0f, 0.0f };
 		} physicsInfo;
+
+		////////////////////////////////////////////////////
+		// DYNAMIC, STATIC, TRIGGER INFORMATION ////////////
+		////////////////////////////////////////////////////
 
 		struct TRIGGERINFO {
 			bool overlapping{ false };
