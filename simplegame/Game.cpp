@@ -209,7 +209,7 @@ void Game::showIntro() {
 		ss.setFontStyle(6, 0, ss.HALIGN_LEFT, ss.VALIGN_TOP);
 
 		ss.newFrame(5000, GameLib::BLACK, 3, 4, 2, GameLib::WHITE);
-		ss.frameLine(3, "Powered by the ABCD...LMNOP Engine");
+		ss.frameLine(3, "Powered by the Amazing GameLib Engine");
 		ss.newFrame(20000, GameLib::BLACK, 3, GameLib::RED, 2, GameLib::YELLOW);
 		ss.frameHeader(0, "Simple Game");
 		ss.frameLine(3,
@@ -219,7 +219,7 @@ void Game::showIntro() {
 			"fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt "
 			"mollit anim id est laborum.");
 		ss.frameLine(3, "ABCDEFGHIJKLMNOPQRSTUVWXYZ");
-		ss.newFrame(5000, 4, 4, 4, 4, GameLib::RED);
+		ss.newFrame(1000, 4, 4, 4, 4, GameLib::RED);
 		ss.newFrame(10000, 8, 2, 5, 9, GameLib::BLUE);
 		ss.frameHeader(1, "Radical Game");
 		ss.frameLine(4,
@@ -253,14 +253,13 @@ void Game::showIntro() {
 		ss.frameLine(4, "ABCDEFGHIJKLMNOPQRSTUVWXYZ");
 		ss.frameLine(4, "abcdefghijklmnopqrstuvwxyz");
 		ss.frameLine(4, "`~!@#$%^&*()_+-=[]\\{}|;':\",./<>?");
-		ss.newFrame(10000, 0, 0, 0, 0, 0);
+		ss.newFrame(0, 0, 0, 0, 0, 0);
 	}
 	ss.play();
 }
 
 
-void Game::showWonEnding() {
-}
+void Game::showWonEnding() {}
 
 
 void Game::showLostEnding() {
