@@ -207,11 +207,31 @@ void Game::showIntro() {
 		ss.setFontStyle(4, 1, ss.HALIGN_RIGHT, ss.VALIGN_CENTER);
 		ss.setFontStyle(5, 0, ss.HALIGN_LEFT, ss.VALIGN_BOTTOM);
 		ss.setFontStyle(6, 0, ss.HALIGN_LEFT, ss.VALIGN_TOP);
+		ss.setImage(0, "godzilla.png", 4.0f, 4.0f);
+		ss.setImage(1, "parrot.jpg", 6.0f, 4.0f);
+		ss.setImage(2, "bunny.jpg", 20.0f, 20.0f);
+		ss.setImage(3, "dogbones.png", 20.0f, 20.0f);
 
+		ss.newFrame(10000, 4, 2, 4, 2, GameLib::ComposeColor(GameLib::FORESTGREEN, GameLib::AZURE, 3, 1, 2, 0), 0);
+		ss.frameHeader(1, "Sprite");
+		ss.frameImage(2, { -1.0f, -1.0f }, { 1.0f, -1.0f }, { 1.0f, 1.2f }, { 0.0f, 0.0f });
+		// ss.frameImage(1, { 0.0f, -4.0f }, { 0.0f, 2.0f }, { 4.0f, 0.1f }, { 0.0f, 0.0f });
+		// ss.frameImage(1, { -6.0f, -2.0f }, { 6.0f, 2.0f }, { 4.0f, 0.1f }, { 0.0f, 720.0f });
+		// ss.frameImageOps({ 0.2f, 0.8f }, { -0.2f, 0.5f }, { 0.0f, 0.0f }, { 1.0f, 1.0f, 0.0f, 0.0f });
+		// ss.frameImageOps({ 0.2f, 0.8f }, { 0.0f, 0.0f }, { -0.0f, 0.0f }, { 1.0f, 1.0f, 0.0f, 0.0f });
+		ss.frameLine(3,
+			"Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et "
+			"dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip "
+			"ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu "
+			"fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt "
+			"mollit anim id est laborum.");
 		ss.newFrame(5000, GameLib::BLACK, 3, 4, 2, GameLib::WHITE);
+		ss.frameImage(3, { -1.0f, -1.0f }, { 1.0f, -1.0f }, { 1.0f, 1.2f }, { 0.0f, 0.0f });
 		ss.frameLine(3, "Powered by the Amazing GameLib Engine");
 		ss.newFrame(20000, GameLib::BLACK, 3, GameLib::RED, 2, GameLib::YELLOW);
 		ss.frameHeader(0, "Simple Game");
+		ss.frameImage(0, { -6.0f, 6.0f }, { 6.0f, -1.0f }, { 10.0f, 0.2f }, { -117.0f, 3600.0f });
+		ss.frameImageOps({ 0.2f, 0.8f }, { -0.2f, 0.5f }, { 0.0f, 0.0f }, { 1.0f, 1.0f, 0.0f, 0.0f });
 		ss.frameLine(3,
 			"Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et "
 			"dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip "
@@ -219,41 +239,41 @@ void Game::showIntro() {
 			"fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt "
 			"mollit anim id est laborum.");
 		ss.frameLine(3, "ABCDEFGHIJKLMNOPQRSTUVWXYZ");
-		ss.newFrame(1000, 4, 4, 4, 4, GameLib::RED);
-		ss.newFrame(10000, 8, 2, 5, 9, GameLib::BLUE);
-		ss.frameHeader(1, "Radical Game");
-		ss.frameLine(4,
-			"Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et "
-			"dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip "
-			"ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu "
-			"fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt "
-			"mollit anim id est laborum.");
-		ss.frameLine(4, "ABCDEFGHIJKLMNOPQRSTUVWXYZ");
-		ss.frameLine(4, "abcdefghijklmnopqrstuvwxyz");
-		ss.frameLine(4, "`~!@#$%^&*()_+-=[]\\{}|;':\",./<>?");
-		ss.newFrame(10000, 8, 2, 5, 9, GameLib::ROSE);
-		ss.frameHeader(2, "Amazing Game");
-		ss.frameLine(5,
-			"Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et "
-			"dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip "
-			"ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu "
-			"fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt "
-			"mollit anim id est laborum.");
-		ss.frameLine(5, "ABCDEFGHIJKLMNOPQRSTUVWXYZ");
-		ss.frameLine(5, "abcdefghijklmnopqrstuvwxyz");
-		ss.frameLine(5, "`~!@#$%^&*()_+-=[]\\{}|;':\",./<>?");
-		ss.newFrame(10000, 8, 2, 5, 9, GameLib::GOLD);
-		ss.frameHeader(0, "Cool Game");
-		ss.frameLine(6,
-			"Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et "
-			"dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip "
-			"ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu "
-			"fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt "
-			"mollit anim id est laborum.");
-		ss.frameLine(4, "ABCDEFGHIJKLMNOPQRSTUVWXYZ");
-		ss.frameLine(4, "abcdefghijklmnopqrstuvwxyz");
-		ss.frameLine(4, "`~!@#$%^&*()_+-=[]\\{}|;':\",./<>?");
-		ss.newFrame(0, 0, 0, 0, 0, 0);
+		// ss.newFrame(1000, 4, 4, 4, 4, GameLib::RED);
+		// ss.newFrame(10000, 8, 2, 5, 9, GameLib::BLUE);
+		// ss.frameHeader(1, "Radical Game");
+		// ss.frameLine(4,
+		//	"Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et "
+		//	"dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip "
+		//	"ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu "
+		//	"fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt "
+		//	"mollit anim id est laborum.");
+		// ss.frameLine(4, "ABCDEFGHIJKLMNOPQRSTUVWXYZ");
+		// ss.frameLine(4, "abcdefghijklmnopqrstuvwxyz");
+		// ss.frameLine(4, "`~!@#$%^&*()_+-=[]\\{}|;':\",./<>?");
+		// ss.newFrame(10000, 8, 2, 5, 9, GameLib::ROSE);
+		// ss.frameHeader(2, "Amazing Game");
+		// ss.frameLine(5,
+		//	"Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et "
+		//	"dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip "
+		//	"ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu "
+		//	"fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt "
+		//	"mollit anim id est laborum.");
+		// ss.frameLine(5, "ABCDEFGHIJKLMNOPQRSTUVWXYZ");
+		// ss.frameLine(5, "abcdefghijklmnopqrstuvwxyz");
+		// ss.frameLine(5, "`~!@#$%^&*()_+-=[]\\{}|;':\",./<>?");
+		// ss.newFrame(10000, 8, 2, 5, 9, GameLib::GOLD);
+		// ss.frameHeader(0, "Cool Game");
+		// ss.frameLine(6,
+		//	"Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et "
+		//	"dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip "
+		//	"ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu "
+		//	"fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt "
+		//	"mollit anim id est laborum.");
+		// ss.frameLine(4, "ABCDEFGHIJKLMNOPQRSTUVWXYZ");
+		// ss.frameLine(4, "abcdefghijklmnopqrstuvwxyz");
+		// ss.frameLine(4, "`~!@#$%^&*()_+-=[]\\{}|;':\",./<>?");
+		// ss.newFrame(0, 0, 0, 0, 0, 0);
 	}
 	ss.play();
 }

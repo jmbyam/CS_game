@@ -31,6 +31,10 @@ namespace GameLib {
 		void setFont(int font, const std::string& path, float size);
 		void setFontStyle(int font, int shadowed, int halign, int valign);
 
+		// loads an image for use in the story screen
+		void setImage(int image, const std::string& path, float w, float h);
+
+		// sound effects
 		void setBlipSound(int blipSoundId) { blipSoundId_ = blipSoundId; }
 
 		void newFrame(int duration,
@@ -38,7 +42,10 @@ namespace GameLib {
 			int headerShadowColor,
 			int textColor,
 			int textShadowColor,
-			int backColor);
+			int backColor1,
+			int backColor2 = -1);
+		void frameImage(int image, glm::vec2 position1, glm::vec2 position2, glm::vec2 scale, glm::vec2 rotRange);
+		void frameImageOps(glm::vec2 fadeRange, glm::vec2 scaleLfo, glm::vec2 rotLfo, glm::vec4 lfo);
 		void frameHeader(int font, const std::string& header);
 		void frameLine(int font, const std::string& line);
 
@@ -100,35 +107,38 @@ namespace GameLib {
 
 			SDL_Texture* actorSprite{ nullptr };
 
-			std::string actorName;	   // name to display on screen
-			int duration{ 0 };		   // milliseconds
-			int backColor{ 0 };		   // LibXOR Color
-			int textColor{ 4 };		   // LibXOR Color
-			int textShadow{ 0 };	   // LibXOR Color
-			std::string headerText;	   // Big 2xPt header text
-			int headerColor{ 4 };	   // LibXOR Color
-			int headerShadow{ 0 };	   // LibXOR Color
-			int headerFont{ 0 };	   // Font index
-			int imageFlags{ 0 };	   //
-			int textFont{ 0 };		   // Font index
-			int animFlags{ 0 };		   //
-			glm::vec2 position1{ 0 };  // position 1 of sprite
-			glm::vec2 position2{ 0 };  // position 2 of sprite
-			int osrlFlags{ 0 };		   // offset, scale, rotation, lfo flags
-			glm::vec2 offset1{ 0, 0 }; // sprite offset 1 for rotation
-			glm::vec2 offset2{ 0, 0 }; // sprite offset 2 for rotation
-			float scale1{ 1 };		   // start scale of sprite
-			float scale2{ 1 };		   // end scale of sprite
-			float scaleLfoAdd{ 0 };	   // scale + lfoAdd * lfo
-			float scaleLfoMul{ 0 };	   // (lfoMul * lfo + 1) * scale
-			float rotation1{ 0 };	   // (degrees) start rotation of sprite
-			float rotation2{ 0 };	   // (degrees) end rotation of sprite
-			float rotLfoAdd{ 0 };	   // rotation + lfoAdd * lfo
-			float rotLfoMul{ 0 };	   // (lfoMul * lfo + 1) * rotation
-			float lfoAmplitude{ 1 };   // unitless
-			float lfoFrequency{ 1 };   // degrees
-			float lfoPhase{ 0 };	   // degrees
-			float lfoRamp{ 0 };		   // milliseconds
+			std::string actorName;			   // name to display on screen
+			int duration{ 0 };				   // milliseconds
+			int backColor1{ 0 };			   // LibXOR Color
+			int backColor2{ 0 };			   // LibXOR Color
+			int textColor{ 4 };				   // LibXOR Color
+			int textShadow{ 0 };			   // LibXOR Color
+			std::string headerText;			   // Big 2xPt header text
+			int headerColor{ 4 };			   // LibXOR Color
+			int headerShadow{ 0 };			   // LibXOR Color
+			int headerFont{ 0 };			   // Font index
+			int imageFlags{ 0 };			   //
+			int image{ -1 };				   // image to use for frame
+			glm::vec2 fadeRange{ 0.1f, 0.9f }; // range for image fade
+			int textFont{ 0 };				   // Font index
+			int animFlags{ 0 };				   //
+			glm::vec2 position1{ 0 };		   // position 1 of sprite
+			glm::vec2 position2{ 0 };		   // position 2 of sprite
+			int osrlFlags{ 0 };				   // offset, scale, rotation, lfo flags
+			glm::vec2 offset1{ 0, 0 };		   // sprite offset 1 for rotation
+			glm::vec2 offset2{ 0, 0 };		   // sprite offset 2 for rotation
+			glm::vec2 scale{ 1.0f, 1.0f };	   // start and end scale of sprite
+			glm::vec2 scaleLfo{ 0 };		   // {x} add, {y} mul
+											   // scale + lfoAdd * lfo
+											   // (lfoMul * lfo + 1) * scale
+			glm::vec2 rotation{ 0.0f, 0.0f };  // (degrees) start rotation of sprite
+			glm::vec2 rotLfo{ 0 };			   // {x} add, {y} mul
+											   // rotation + lfoAdd * lfo
+											   // (lfoMul * lfo + 1) * rotation
+			float lfoAmplitude{ 1 };		   // unitless
+			float lfoFrequency{ 1 };		   // degrees
+			float lfoPhase{ 0 };			   // degrees
+			float lfoRamp{ 0 };				   // milliseconds
 			string_vector lines;
 		};
 
@@ -182,6 +192,13 @@ namespace GameLib {
 			void draw(int x, int y, const char* s, SDL_Color fg, SDL_Color bg) { font->draw(x, y, s, fg, bg, shadow); }
 			void draw(int x, int y, const std::string& s, SDL_Color fg, SDL_Color bg) { draw(x, y, s.c_str(), fg, bg); }
 		} fonts[MAX_FONTS];
+
+		static constexpr int MAX_IMAGES = 16;
+		struct IMAGEINFO {
+			SDL_Texture* texture{ nullptr };
+			SDL_Rect rect;
+			glm::vec2 size;
+		} images[MAX_IMAGES];
 
 		struct TEXTRECT {
 			int windowX{ 0 };

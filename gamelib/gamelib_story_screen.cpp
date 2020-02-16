@@ -44,6 +44,18 @@ namespace GameLib {
 			f.valign = valign & VALIGN_CENTER;
 	}
 
+
+	void StoryScreen::setImage(int image, const std::string& path, float w, float h) {
+		if (image < 0 || image >= MAX_IMAGES)
+			return;
+		images[image].texture = context->loadImage(path);
+		if (!images[image].texture) {
+			HFLOGWARN("Image not found '%s'", path.c_str());
+		}
+		images[image].size.x = w * ptsize;
+		images[image].size.y = h * ptsize;
+	}
+
 	void StoryScreen::play() {
 		curframe = 0;
 		Hf::StopWatch stopwatch;
@@ -113,15 +125,39 @@ namespace GameLib {
 		int headerShadowColor,
 		int textColor,
 		int textShadowColor,
-		int backColor) {
+		int backColor1,
+		int backColor2) {
 		Dialogue d;
 		d.duration = duration;
 		d.headerColor = headerColor;
 		d.headerShadow = headerShadowColor;
 		d.textColor = textColor;
 		d.textShadow = textShadowColor;
-		d.backColor = backColor;
+		d.backColor1 = backColor1;
+		d.backColor2 = backColor2 < 0 ? backColor1 : backColor2;
 		dialogue.push_back(d);
+	}
+
+
+	void StoryScreen::frameImage(int image, glm::vec2 pos1, glm::vec2 pos2, glm::vec2 scale, glm::vec2 rot) {
+		Dialogue& d = dialogue.back();
+		d.image = image;
+		d.position1 = pos1 * (float)ptsize;
+		d.position2 = pos2 * (float)ptsize;
+		d.scale = scale;
+		d.rotation = rot;
+	}
+
+
+	void StoryScreen::frameImageOps(glm::vec2 fadeRange, glm::vec2 scaleLfo, glm::vec2 rotLfo, glm::vec4 lfo) {
+		Dialogue& d = dialogue.back();
+		d.fadeRange = fadeRange;
+		d.scaleLfo = scaleLfo;
+		d.rotLfo = rotLfo;
+		d.lfoAmplitude = lfo.x;
+		d.lfoFrequency = lfo.y; // * 3.141592653f / 180.0f;
+		d.lfoPhase = lfo.z * 3.141592653f / 180.0f;
+		d.lfoRamp = lfo.w;
 	}
 
 
@@ -171,6 +207,36 @@ namespace GameLib {
 
 		// determine curves
 
+		auto ucurve = [](float t, float tmin, float tmax, int flags) {
+			float pct = clamp(t, 0.0f, 1.0f);
+			t = 1.0f;
+			if (flags & 1 && pct < tmin)
+				t = pct / tmin;
+			if (flags & 2 && pct > tmax)
+				t = 1.0f - (pct - tmax) / (1.0f - tmax);
+			t = clamp(t, 0.0f, 1.0f);
+			if (flags & 4)
+				return 1.0f - t;
+			return t;
+		};
+
+
+		auto osc = [](float t, float A, float omega, float phi, int flags) {
+			float lfo = A * std::cos((t * 3.1415926f / 180.0f) * omega + phi);
+			// positive 0 to 1?
+			if (flags & 1)
+				lfo = 0.5f * lfo + 0.5f;
+			// inverse (1 - lfo)
+			if (flags & 2)
+				lfo = 1.0f - lfo;
+			return lfo;
+		};
+
+		auto calcLfo = [](float x, float lfo, glm::vec2 lfoParams) {
+			float mix = glm::mix(lfoParams.x, lfoParams.y, lfo);
+			return x + mix;
+		};
+
 		// frameCurve ramps up to 1, then back down
 		float frameCurve = 1.0f;
 		if (framePct < 0.1f)
@@ -183,11 +249,15 @@ namespace GameLib {
 		float fadeCurve = framePct > 0.9f ? 1.0f - frameCurve : 0.0f;
 		// textFade is 1, then ramps down to 0
 		float inverseFadeCurve = 1.0f - fadeCurve;
+		// imageCurve is
+		float imageCurve = ucurve(framePct, 0.3f, 0.7f, 3);
 
 		// determine colors based on curves
 
-		SDL_Color color1 = MakeColor(frame.backColor);
-		SDL_Color color2 = MakeColor(fadeFrame.backColor);
+		SDL_Color bcolor1 = MakeColor(frame.backColor1);
+		SDL_Color bcolor2 = MakeColor(frame.backColor2);
+		SDL_Color color1 = mix(bcolor1, bcolor2, framePct);
+		SDL_Color color2 = MakeColor(fadeFrame.backColor1);
 		SDL_Color backColor = mix(color1, color2, fadeCurve);
 		SDL_Color headerFG = mix(backColor, MakeColor(frame.headerColor), frameCurve);
 		SDL_Color headerBG = mix(backColor, MakeColor(frame.headerShadow), frameCurve);
@@ -195,6 +265,37 @@ namespace GameLib {
 		SDL_Color textBG = mix(backColor, MakeColor(frame.textShadow), inverseFadeCurve);
 		context->clearScreen(backColor);
 
+		// image
+		if (frame.image >= 0) {
+			IMAGEINFO& img = images[frame.image];
+			glm::vec2 center = { screenWidth * 0.5f, screenHeight * 0.5f };
+			glm::vec2 size2 = img.size * 0.5f;
+			glm::vec2 position = glm::mix(frame.position1, frame.position2, framePct);
+
+			float lfoCurve = ucurve(tickCount * MS_PER_UPDATE, frame.lfoRamp / frame.duration, 1.0f, 1);
+			float lfo = osc(tickCount, lfoCurve * frame.lfoAmplitude, frame.lfoFrequency, frame.lfoPhase, 1);
+			float angle = glm::mix<float>(frame.rotation.x, frame.rotation.y, framePct);
+			float scale = glm::mix<float>(frame.scale.x, frame.scale.y, framePct);
+			scale = scale * calcLfo(1.0f, lfo, frame.scaleLfo);
+			angle = calcLfo(angle, lfo, frame.rotLfo);
+
+			glm::vec2 location = position + center - size2 * scale;
+			SDL_Rect dstrect{ (int)location.x, (int)location.y, (int)(img.size.x * scale), (int)(img.size.y * scale) };
+			if (img.texture) {
+				SDL_SetTextureBlendMode(img.texture, SDL_BLENDMODE_BLEND);
+				SDL_SetTextureAlphaMod(img.texture, (Uint8)(255 * imageCurve));
+				SDL_RenderCopyEx(context->renderer(),
+					img.texture,
+					nullptr,
+					&dstrect,
+					angle,
+					nullptr,
+					SDL_RendererFlip::SDL_FLIP_NONE);
+				SDL_SetTextureAlphaMod(img.texture, 255);
+			}
+		}
+
+		// header text
 		if (!frame.headerText.empty()) {
 			FONTINFO& f = fonts[frame.headerFont];
 			int w = f.calcWidth(frame.headerText);
@@ -246,7 +347,7 @@ namespace GameLib {
 				context->playAudioClip(blipSoundId_);
 			}
 		}
-	}
+	} // namespace GameLib
 
 
 	void StoryScreen::_reflowText(Dialogue& d) {
@@ -321,7 +422,7 @@ namespace GameLib {
 			std::istringstream istr(line);
 			istr >> actor->size.x;
 			istr >> actor->size.y;
-			actor->size *= screenSize;
+			actor->size *= ptsize;
 		}
 
 		dialogue.clear();
