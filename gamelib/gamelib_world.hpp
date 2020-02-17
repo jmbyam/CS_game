@@ -52,6 +52,7 @@ namespace GameLib {
 		void start(float t);
 		void update(float deltaTime);
 		void physics(float deltaTime);
+		void drawTiles(Graphics& graphics);
 		void draw(Graphics& graphics);
 
 		void setTile(int x, int y, Tile ptr);
@@ -103,6 +104,15 @@ namespace GameLib {
 			float d{ 0.05f };				 // air resistance
 			glm::vec3 v_wind;				 // wind velocity
 		} worldPhysicsInfo;
+
+		struct BOX2D {
+			b2World world;
+			b2Vec2 gravity;
+			void init(glm::vec2 g) {
+				gravity = b2Vec2{ g.x, g.y };
+				world = b2World{ gravity };
+			}
+		} box2d;
 
 	protected:
 		virtual void _draw(Graphics& g);

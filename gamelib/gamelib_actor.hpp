@@ -1,6 +1,7 @@
 #ifndef GAMELIB_ACTOR_HPP
 #define GAMELIB_ACTOR_HPP
 
+#include <box2d/box2d.h>
 #include <gamelib_actor_component.hpp>
 #include <gamelib_graphics_component.hpp>
 #include <gamelib_input_component.hpp>
@@ -22,7 +23,8 @@ namespace GameLib {
 	class Actor : public Object {
 	public:
 		Actor() {}
-		Actor(InputComponentPtr input,
+		Actor(
+			InputComponentPtr input,
 			ActorComponentPtr actor,
 			PhysicsComponentPtr physics,
 			GraphicsComponentPtr graphics);
@@ -65,6 +67,85 @@ namespace GameLib {
 		// returns size as a 2D vector
 		glm::vec2 size2d() const { return { size.x, size.y }; }
 
+		// returns center point as a 2D vector
+		glm::vec2 center2d() const { return { position.x + size.x * 0.5f, position.y + size.y * 0.5f }; }
+
+		// returns signed distance from p to center (in world units)
+		float sdf(glm::vec2 p, float radius = 0.0f) const {
+			glm::vec2 q = glm::abs(p - center2d()) - size2d();
+			return glm::length(glm::max(q, 0.0f)) + glm::min(glm::max(q.x, q.y), 0.0f) - radius;
+			// glm::vec2 c = center2d();
+			// glm::vec2 half = size2d() * 0.5f;
+			// glm::vec2 halfs{ std::max(p.x - c.x - half.x, c.x - p.x - half.x),
+			//				 std::max(p.y - c.y - half.y, c.y - p.y - half.y) };
+			// return std::min(halfs.x, halfs.y);
+		}
+
+
+		// ray march from eye towards dir, returning hit point
+		glm::vec2 raymarch(glm::vec2 O, glm::vec2 D, float t1, float tmax) const {
+			constexpr int MAX_MARCH_STEPS = 64;
+			float t = t1;
+			for (int i = 0; i < MAX_MARCH_STEPS; i++) {
+				glm::vec2 p = O + t * D;
+				float distance = sdf(p);
+				if (distance < EPSILON) {
+					return p;
+				}
+				t += distance;
+				if (t >= tmax)
+					return O + tmax * D;
+			}
+			return O;
+		}
+
+
+		// calculates point from p to center on this actor (in world units)
+		// if p does not intersect, p is returned
+		glm::vec2 support(glm::vec2 p) const {
+			glm::vec2 c = center2d();
+			glm::vec2 dir = c - p;
+			float tmax = glm::length(dir) + glm::length(size2d());
+			return raymarch(p, glm::normalize(dir), 0, tmax);
+		}
+
+
+		// calculate gradient to produce normal vector on surface
+		glm::vec2 normal(glm::vec2 p) const {
+			glm::vec2 N = { sdf({ p.x + EPSILON, p.y }) - sdf({ p.x - EPSILON, p.y }),
+							sdf({ p.x, p.y + EPSILON }) - sdf({ p.x, p.y - EPSILON }) };
+			return glm::normalize(N);
+		}
+
+
+		// calculate gradient to produce tangent vector on surface
+		glm::vec2 tangent(glm::vec2 p) const {
+			glm::vec2 T = { sdf({ p.x, p.y + EPSILON }) - sdf({ p.x, p.y - EPSILON }),
+							sdf({ p.x + EPSILON, p.y }) - sdf({ p.x - EPSILON, p.y }) };
+			return glm::normalize(T);
+		}
+
+
+		float touching(Actor& other) const {
+			glm::vec2 c1 = center2d();
+			glm::vec2 c2 = other.center2d();
+			// glm::vec2 dir = c2 - c1;
+			// float distance = glm::length(dir);
+			// find surface points
+			glm::vec2 p1 = support(c2);
+			glm::vec2 p2 = other.support(c1);
+			// are they inside?
+			float sdf1 = sdf(p2);
+			float sdf2 = other.sdf(p1);
+			float distanceBetween = glm::length(p2 - p1);
+			// if inside, return negative distance
+			if (sdf1 < 0 || sdf2 < 0) {
+				return -distanceBetween;
+			}
+			return distanceBetween;
+		}
+
+
 		// Get world pixel position of the actor's upper left coordinates
 		glm::ivec2 pixelPosition(Graphics& g) { return static_cast<glm::ivec2>(g.tileSizef() * position2d()); }
 
@@ -82,9 +163,9 @@ namespace GameLib {
 		// Return the center position of the actor's
 		glm::ivec2 pixelCenter(Graphics& g) {
 			glm::ivec4 rect{ (int)(g.getTileSizeX() * position.x),
-				(int)(g.getTileSizeY() * position.y),
-				(int)(g.getTileSizeX() * size.x),
-				(int)(g.getTileSizeY() * size.y) };
+							 (int)(g.getTileSizeY() * position.y),
+							 (int)(g.getTileSizeX() * size.x),
+							 (int)(g.getTileSizeY() * size.y) };
 			return { rect.x + (rect.z >> 1), rect.y + (rect.w >> 1) };
 		}
 
@@ -280,6 +361,17 @@ namespace GameLib {
 
 		// current velocity (in world units)
 		glm::vec3 velocity{ 0.0f, 0.0f, 0.0f };
+
+		struct BOX2D {
+			b2BodyDef bodyDef;
+			b2Body* body{ nullptr };
+
+			void initPhysics(World& world) {
+				bodyDef.type = b2_dynamicBody;
+				bodyDef.position.Set(0.0f, 0.0f);
+				body = world.createBody(&bodyDef);
+			}
+		} box2d;
 
 		// maximum speed (in world units)
 		float speed{ 1.0f };

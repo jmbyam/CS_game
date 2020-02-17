@@ -79,11 +79,11 @@ namespace GameLib {
 				continue;
 			actor->physics(deltaTime, *this);
 		}
-	} // namespace GameLib
+	}
+
+	void World::drawTiles(Graphics& graphics) { _draw(graphics); }
 
 	void World::draw(Graphics& graphics) {
-		_draw(graphics);
-
 		for (auto actor : staticActors) {
 			if (!actor->active || !actor->visible)
 				continue;

@@ -51,4 +51,18 @@ namespace GameLib {
 			a.position.y = clamp<float>(a.position.y, 1, (float)w.worldSizeY - a.size.y - 1);
 		}
 	}
+
+	void debugDrawSDF(Actor& a, Actor& b);
+
+	bool NewtonPhysicsComponent::collideDynamic(Actor& a, Actor& b) {
+		debugDrawSDF(a, b);
+		return SimplePhysicsComponent::collideDynamic(a, b);
+	}
+
+	bool NewtonPhysicsComponent::collideStatic(Actor& a, Actor& b) {
+		debugDrawSDF(a, b);
+		return SimplePhysicsComponent::collideStatic(a, b);
+	}
+
+
 } // namespace GameLib

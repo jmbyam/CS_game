@@ -107,12 +107,12 @@ void Game::initLevel(int levelNum) {
 	float speed = (float)graphics.getTileSizeX();
 
 	GameLib::ActorPtr actor;
-	actor = _makeActor(cx - 6, cy, 16, 2, NewInput(), NewDungeonActor(), NewNewtonPhysics(), NewGraphics());
+	actor = _makeActor(cx - 6, cy, 16, 2, NewInput(), NewDungeonActor(), NewNewtonPhysics(), nullptr);//NewGraphics());
 	world.addDynamicActor(actor);
 
-	actor = _makeActor(cx + 6, cy + 4, 4, 32, nullptr, NewDungeonActor(), NewPhysics(), NewGraphics());
+	actor = _makeActor(cx, cy + 4.5, 4, 32, nullptr, NewDungeonActor(), NewPhysics(), nullptr);//NewGraphics());
 	world.addStaticActor(actor);
-
+return;
 	actor = _makeActor(cx + 10, cy - 4, 4, 32, nullptr, NewDungeonActor(), NewPhysics(), NewGraphics());
 	world.addStaticActor(actor);
 
@@ -353,6 +353,8 @@ bool Game::playGame() {
 		input.handle();
 		_debugKeys();
 
+		context.clearScreen(backColor);
+		world.drawTiles(graphics);
 		while (lag >= Game::MS_PER_UPDATE) {
 			updateWorld();
 			lag -= Game::MS_PER_UPDATE;
@@ -360,7 +362,6 @@ bool Game::playGame() {
 
 		shake();
 		updateCamera();
-		context.clearScreen(backColor);
 		drawWorld();
 		drawHUD();
 

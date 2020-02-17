@@ -3,7 +3,31 @@
 #include <gamelib_locator.hpp>
 
 namespace GameLib {
+	void debugDrawSDF(Actor& a, Actor& b) {
+		World* world = Locator::getWorld();
+		Graphics& g = *dynamic_cast<Graphics*>(Locator::getGraphics());
+		glm::vec2 c1 = a.center2d();
+		glm::vec2 c2 = b.center2d();
+		glm::vec2 p1 = a.support(c2);
+		glm::vec2 p2 = b.support(c1);
+		c1 *= g.tileSizef();
+		c2 *= g.tileSizef();
+		p1 *= g.tileSizef();
+		p2 *= g.tileSizef();
+		if (a.touching(b) < 0.0f) {
+			g.draw(c1, { 16, 16 }, Yellow);
+			g.draw(c2, { 16, 16 }, Rose);
+		} else {
+			g.draw(c1, { 16, 16 }, Orange);
+			g.draw(c2, { 16, 16 }, Violet);
+		}
+		g.line(c1, p1, Red);
+		g.line(p1, p2, ForestGreen);
+		g.line(p2, c2, Blue);
+	}
+
 	void debugDraw(Actor& a) {
+		return;
 		World* world = Locator::getWorld();
 		auto graphics = Locator::getGraphics();
 

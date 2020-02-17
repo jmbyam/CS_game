@@ -46,4 +46,20 @@ namespace GameLib {
 		SDL_SetRenderDrawColor(context->renderer(), color.r, color.g, color.b, SDL_ALPHA_OPAQUE);
 		SDL_RenderFillRect(context->renderer(), &rect);
 	}
+
+	void Graphics::draw(glm::ivec2 c, glm::ivec2 size, SDL_Color color) {
+		glm::ivec2 p = transform(c);
+		int hx = size.x >> 1;
+		int hy = size.y >> 1;
+		SDL_Rect rect{ p.x - hx, p.y - hy, size.x, size.y };
+		SDL_SetRenderDrawColor(context->renderer(), color.r, color.g, color.b, SDL_ALPHA_OPAQUE);
+		SDL_RenderFillRect(context->renderer(), &rect);
+	}
+
+	void Graphics::line(glm::ivec2 p1, glm::ivec2 p2, SDL_Color color) {
+		SDL_SetRenderDrawColor(context->renderer(), color.r, color.g, color.b, SDL_ALPHA_OPAQUE);
+		p1 = transform(p1);
+		p2 = transform(p2);
+		SDL_RenderDrawLine(context->renderer(), p1.x, p1.y, p2.x, p2.y);
+	}
 } // namespace GameLib

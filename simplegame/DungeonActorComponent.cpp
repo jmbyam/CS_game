@@ -51,6 +51,76 @@ namespace GameLib {
 		glm::vec3 curVelocity = a.velocity;
 		a.velocity = a.position - a.lastPosition;
 		a.position = a.lastPosition;
+		// NEW SDF style
+
+		float btop = b.position.y;
+		float bbot = b.position.y + b.size.y;
+
+		glm::vec2 P = { a.position.x, a.position.y };
+		glm::vec2 Pmax = a.position2d() + a.size2d();
+		glm::vec2 asize = a.size2d();
+		glm::vec2 v = { a.velocity.x, a.velocity.y };
+		float vlen = glm::length(v);
+		// avoid NAN by ensuring vector has length
+		glm::vec2 vdir = (vlen != 0.0f) ? glm::normalize(v) : glm::vec2{ 0.0f, 0.0f };
+		glm::vec2 supportB = b.support(a.center2d());
+		glm::vec2 supportA = a.support(b.center2d());
+		float t = 0.0f;
+		float dt = 0.001f;
+		float touching = a.touching(b);
+		if (touching < 0) {
+			glm::vec2 N = b.normal(supportB);
+			glm::vec2 T = b.tangent(supportB);
+			float d = glm::length(supportA - supportB);
+			vdir = glm::normalize(supportA - supportB);
+			glm::vec2 Pnew = P + vdir * touching;
+			a.position.x = Pnew.x;
+			a.position.y = Pnew.y;
+
+			//// collision, B is on bottom of A
+			//if (std::abs(touching) > 0.1f) {
+			//	HFLOGWARN("strange %f", d);
+			//}
+			//a.position = curPosition;
+			//a.velocity = curVelocity;
+			//if (std::abs(N.x) > std::abs(N.y)) {
+			//	a.position.x = Pnew.x;
+			//	a.velocity.x = 0.0f;
+			//	a.velocity.y = curVelocity.y;
+			//}
+			//if (std::abs(N.y) > std::abs(N.x)) {
+			//	a.velocity.x = curVelocity.x;
+			//	// a.velocity.y = 0.0f;
+			//	if (N.y > 0) {
+			//		float y1 = std::min(bbot, bbot+1);
+			//		float y2 = std::max(bbot, bbot+1);
+			//		a.position.y = clamp(Pnew.y, y1, y2);
+			//		a.velocity.y = -std::abs(v.y);
+			//	} else {
+			//		float y1 = std::min(a.position.y, btop - a.size.y);
+			//		float y2 = std::max(a.position.y, btop - a.size.y);
+			//		a.position.y = clamp(Pnew.y, y1, y2);
+			//		a.velocity.y = std::abs(v.y);
+			//	}
+			//}
+			//float lt = touching;
+			//touching = a.touching(b);
+			//if (touching < 0) {
+			//	HFLOGWARN("still touching %f from %f", touching, lt);
+			//}
+			//// a.velocity.x = 0.0f;
+			//// a.velocity.y = 0.0f;
+			//// if (std::abs(N.x) > 0.0001f)
+			////	a.velocity.x = -a.velocity.x;
+			//// if (std::abs(N.y) > 0.0001f)
+			////	a.velocity.y = -a.velocity.y;
+			//// a.velocity.y = 0.0f;
+		} else {
+			a.velocity = curVelocity;
+			a.position = curPosition;
+		}
+		return;
+		// OLD AABB style
 		glm::vec3 normal;
 		float collisionTime = SweptAABB(a, b, normal);
 		if (collisionTime >= 1.0f) {
