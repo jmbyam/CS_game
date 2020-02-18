@@ -124,8 +124,7 @@ namespace GameLib {
 
 		// set main sprite id, configures anim sprite id if 0
 		uint setSprite(uint libId, uint id) {
-			if (anim.baseId == 0)
-				anim.baseId = id;
+			anim.baseId = id;
 			sprite.libId = libId;
 			sprite.id = id;
 			return id;
