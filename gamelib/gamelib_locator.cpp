@@ -9,4 +9,5 @@ namespace GameLib {
     IGraphics* Locator::graphicsService_{ nullptr };
     IGraphics Locator::nullGraphicsService_;
     World* Locator::world_{ nullptr };
+	Box2D* Locator::box2d_ { nullptr };
 }

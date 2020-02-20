@@ -1,5 +1,6 @@
 #include "pch.h"
 #include <gamelib_actor.hpp>
+#include <gamelib_locator.hpp>
 #include <gamelib_world.hpp>
 
 namespace GameLib {
@@ -71,6 +72,13 @@ namespace GameLib {
 	}
 
 	void World::physics(float deltaTime) {
+		for (auto a : staticActors) {
+			a->preupdate();
+		}
+		for (auto a : dynamicActors) {
+			a->preupdate();
+		}
+
 		for (auto actor : staticActors) {
 			actor->physics(deltaTime, *this);
 		}
@@ -78,6 +86,16 @@ namespace GameLib {
 			if (!actor->active)
 				continue;
 			actor->physics(deltaTime, *this);
+		}
+
+		auto box2d = Locator::getBox2D();
+		box2d->update(deltaTime);
+
+		for (auto a : staticActors) {
+			a->postupdate();
+		}
+		for (auto a : dynamicActors) {
+			a->postupdate();
 		}
 	}
 
@@ -165,6 +183,10 @@ namespace GameLib {
 		if (!Tokens::worldTokens.count(cmd))
 			return s;
 		Tokens::Tiles token = Tokens::worldTokens[cmd];
+
+		// ensure objects don't pass through
+		auto box2d = Locator::getBox2D();
+
 		char c;
 		unsigned val;
 		switch (token) {
@@ -191,6 +213,7 @@ namespace GameLib {
 					flags = Tokens::charToFlags[c];
 				}
 				getTile(i, row).flags = flags;
+				_addTileToPhysics(i, row);
 			}
 			break;
 		case Tokens::Tiles::FLAGS:
@@ -278,5 +301,13 @@ namespace GameLib {
 				g.draw(0, t.spriteId, s.position.x, s.position.y);
 			}
 		}
+	}
+
+	void World::_addTileToPhysics(int i, int j) {
+		auto tile = getTile(i, j);
+		if (!tile.solid())
+			return;
+		auto box2d = Locator::getBox2D();
+		tile.box2dId = box2d->initBody(b2_staticBody, { i + 0.5f, j + 0.5f }, { 0.45f, 0.45f }, 1.0f, 0.3f);
 	}
 } // namespace GameLib

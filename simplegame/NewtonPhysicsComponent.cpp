@@ -30,7 +30,9 @@ namespace GameLib {
 		}
 
 		// update acceleration
-		glm::vec3 acceleration = -w.worldPhysicsInfo.d / a.physicsInfo.mass * a.velocity;
+		float volume = a.size.x * a.size.y * a.size.z;
+		float mass = a.physicsInfo.density * volume;
+		glm::vec3 acceleration = -w.worldPhysicsInfo.d / mass * a.velocity;
 		if (a.physicsInfo.v.y > 0.0f)
 			acceleration += 5.0f * w.worldPhysicsInfo.g;
 		else

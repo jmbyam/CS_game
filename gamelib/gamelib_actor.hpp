@@ -52,6 +52,12 @@ namespace GameLib {
 		// Called each frame the object needs to update itself before drawing
 		void update(float deltaTime, World& world);
 
+		// Called each frame before physics are updated
+		void preupdate();
+
+		// Called each frame after physics are updated
+		void postupdate();
+
 		// Called each frame for the object to handle collisions and physics
 		void physics(float deltaTime, World& world);
 
@@ -67,8 +73,26 @@ namespace GameLib {
 		// returns size as a 2D vector
 		glm::vec2 size2d() const { return { size.x, size.y }; }
 
+		// return size as a 2D vector
+		glm::vec2 sizeHalf2d() const { return { size.x * 0.5f, size.y * 0.5f }; }
+
 		// returns center point as a 2D vector
 		glm::vec2 center2d() const { return { position.x + size.x * 0.5f, position.y + size.y * 0.5f }; }
+
+		// sets new center point
+		void setCenter2d(glm::vec2 p) {
+			position.x = p.x - size.x * 0.5f;
+			position.y = p.y - size.y * 0.5f;
+		}
+
+		// returns velocity as a 2D vector
+		glm::vec2 velocity2d() const { return { velocity.x, velocity.y }; }
+
+		// sets new velocity
+		void setVelocity2d(glm::vec2 v) {
+			velocity.x = v.x;
+			velocity.y = v.y;
+		}
 
 		// returns signed distance from p to center (in world units)
 		float sdf(glm::vec2 p, float radius = 0.0f) const {
@@ -345,6 +369,9 @@ namespace GameLib {
 		////////////////////////////////////////////////////
 		// POSITION AND VELOCITY ///////////////////////////
 		////////////////////////////////////////////////////
+
+		b2BodyType box2dType{ b2_dynamicBody };
+		int box2dId{ -1 };
 
 		// current position (in world units)
 		glm::vec3 position{ 0.0f, 0.0f, 0.0f };

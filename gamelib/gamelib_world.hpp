@@ -35,6 +35,7 @@ namespace GameLib {
 		char charDesc{ '?' };
 		unsigned spriteId{ 0 };
 		unsigned flags{ EMPTY };
+		int box2dId { -1 };
 	};
 
 	class Actor;
@@ -105,17 +106,9 @@ namespace GameLib {
 			glm::vec3 v_wind;				 // wind velocity
 		} worldPhysicsInfo;
 
-		struct BOX2D {
-			b2World world;
-			b2Vec2 gravity;
-			void init(glm::vec2 g) {
-				gravity = b2Vec2{ g.x, g.y };
-				world = b2World{ gravity };
-			}
-		} box2d;
-
 	protected:
 		virtual void _draw(Graphics& g);
+		virtual void _addTileToPhysics(int x, int y);
 	};
 } // namespace GameLib
 

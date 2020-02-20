@@ -12,6 +12,11 @@ void Game::init() {
 	GameLib::Locator::provide(&input);
 	GameLib::Locator::provide(&graphics);
 	GameLib::Locator::provide(&world);
+	GameLib::Locator::provide(&box2d);
+
+	box2d.init();
+
+	audio.setVolume(0.2f);
 
 	PlaySoundCommand play0(0, false);
 	PlaySoundCommand play1(1, false);
@@ -107,12 +112,12 @@ void Game::initLevel(int levelNum) {
 	float speed = (float)graphics.getTileSizeX();
 
 	GameLib::ActorPtr actor;
-	actor = _makeActor(cx - 6, cy, 16, 2, NewInput(), NewDungeonActor(), NewNewtonPhysics(), nullptr);//NewGraphics());
+	actor = _makeActor(cx + 6, cy, 16, 2, NewInput(), NewDungeonActor(), NewPhysics(), NewGraphics());
 	world.addDynamicActor(actor);
 
-	actor = _makeActor(cx, cy + 4.5, 4, 32, nullptr, NewDungeonActor(), NewPhysics(), nullptr);//NewGraphics());
+	actor = _makeActor(cx + 6, cy + 4.5f, 4, 32, nullptr, NewDungeonActor(), NewPhysics(), NewGraphics());
 	world.addStaticActor(actor);
-return;
+
 	actor = _makeActor(cx + 10, cy - 4, 4, 32, nullptr, NewDungeonActor(), NewPhysics(), NewGraphics());
 	world.addStaticActor(actor);
 
@@ -131,7 +136,8 @@ return;
 	// Trace Curtis Actors
 
 	// Some extras
-	auto randomPlayer1 = _makeActor(cx - 3,
+	auto randomPlayer1 = _makeActor(
+		cx - 3,
 		cy,
 		speed,
 		1,
@@ -142,7 +148,8 @@ return;
 	world.addDynamicActor(randomPlayer1);
 	randomPlayer1->rename("randomPlayer1");
 
-	auto randomPlayer2 = _makeActor(cx - 6,
+	auto randomPlayer2 = _makeActor(
+		cx - 6,
 		cy,
 		speed,
 		3,
@@ -153,7 +160,8 @@ return;
 	world.addDynamicActor(randomPlayer2);
 	randomPlayer2->rename("randomPlayer2");
 
-	auto randomPlayer3 = _makeActor(cx - 6,
+	auto randomPlayer3 = _makeActor(
+		cx - 6,
 		cy - 3,
 		speed,
 		4,
@@ -164,7 +172,8 @@ return;
 	world.addDynamicActor(randomPlayer3);
 	randomPlayer3->rename("randomPlayer3");
 
-	auto Tailon = _makeActor(cx,
+	auto Tailon = _makeActor(
+		cx,
 		cy - 9,
 		speed,
 		300,
@@ -175,7 +184,8 @@ return;
 	world.addDynamicActor(Tailon);
 	Tailon->rename("Tailon");
 
-	auto Tailon2 = _makeActor(cx - 8,
+	auto Tailon2 = _makeActor(
+		cx - 8,
 		cy - 9,
 		speed,
 		30,
@@ -220,7 +230,8 @@ void Game::showIntro() {
 		// ss.frameImage(1, { -6.0f, -2.0f }, { 6.0f, 2.0f }, { 4.0f, 0.1f }, { 0.0f, 720.0f });
 		// ss.frameImageOps({ 0.2f, 0.8f }, { -0.2f, 0.5f }, { 0.0f, 0.0f }, { 1.0f, 1.0f, 0.0f, 0.0f });
 		// ss.frameImageOps({ 0.2f, 0.8f }, { 0.0f, 0.0f }, { -0.0f, 0.0f }, { 1.0f, 1.0f, 0.0f, 0.0f });
-		ss.frameLine(3,
+		ss.frameLine(
+			3,
 			"Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et "
 			"dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip "
 			"ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu "
@@ -233,7 +244,8 @@ void Game::showIntro() {
 		ss.frameHeader(0, "Simple Game");
 		ss.frameImage(0, { -6.0f, 6.0f }, { 6.0f, -1.0f }, { 10.0f, 0.2f }, { -117.0f, 3600.0f });
 		ss.frameImageOps({ 0.2f, 0.8f }, { -0.2f, 0.5f }, { 0.0f, 0.0f }, { 1.0f, 1.0f, 0.0f, 0.0f });
-		ss.frameLine(3,
+		ss.frameLine(
+			3,
 			"Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et "
 			"dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip "
 			"ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu "
@@ -397,7 +409,8 @@ void Game::drawWorld() {
 
 void Game::drawHUD() {
 	minchofont.draw(0, 0, "Hello, world!", GameLib::Red, GameLib::Font::SHADOWED);
-	gothicfont.draw((int)graphics.getWidth(),
+	gothicfont.draw(
+		(int)graphics.getWidth(),
 		0,
 		"Hello, world!",
 		GameLib::Blue,
@@ -407,14 +420,16 @@ void Game::drawHUD() {
 	int y = (int)graphics.getCenterY() >> 1;
 	float s = GameLib::wave(t1, 1.0f);
 	SDL_Color c = GameLib::MakeColorHI(7, 4, s, false);
-	minchofont.draw(x,
+	minchofont.draw(
+		x,
 		y,
 		"Collisions",
 		c,
 		GameLib::Font::SHADOWED | GameLib::Font::HALIGN_CENTER | GameLib::Font::VALIGN_CENTER | GameLib::Font::BOLD |
 			GameLib::Font::ITALIC);
 
-	minchofont.draw(0,
+	minchofont.draw(
+		0,
 		(int)graphics.getHeight() - 2,
 		"HP: 56",
 		GameLib::Gold,
@@ -422,7 +437,8 @@ void Game::drawHUD() {
 
 	char fpsstr[64] = { 0 };
 	snprintf(fpsstr, 64, "%3.2f", 1.0f / dt);
-	minchofont.draw((int)graphics.getWidth(),
+	minchofont.draw(
+		(int)graphics.getWidth(),
 		(int)graphics.getHeight() - 2,
 		fpsstr,
 		GameLib::Gold,

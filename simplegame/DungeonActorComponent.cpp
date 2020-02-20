@@ -46,6 +46,7 @@ namespace GameLib {
 
 
 	void DungeonActorComponent::handleCollisionStatic(Actor& a, Actor& b) {
+		return;
 		// backup a's position
 		glm::vec3 curPosition = a.position;
 		glm::vec3 curVelocity = a.velocity;
@@ -148,6 +149,7 @@ namespace GameLib {
 
 
 	void DungeonActorComponent::handleCollisionDynamic(Actor& a, Actor& b) {
+		return;
 		// backup a's position
 		glm::vec3 curPosition = a.position;
 		glm::vec3 curVelocity = a.velocity;
@@ -180,6 +182,7 @@ namespace GameLib {
 
 
 	void DungeonActorComponent::handleCollisionWorld(Actor& a, World& w) {
+		return;
 		// determine whether to move the player up, or to the left
 		int ix1 = (int)(a.position.x);
 		int iy1 = (int)(a.position.y);

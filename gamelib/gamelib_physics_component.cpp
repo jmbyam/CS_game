@@ -1,5 +1,6 @@
 #include "pch.h"
-#include "gamelib_physics_component.hpp"
+#include <gamelib_locator.hpp>
+#include <gamelib_physics_component.hpp>
 #include <limits>
 
 namespace GameLib {
@@ -75,7 +76,7 @@ namespace GameLib {
 
 		float enterTime = std::max(enter.x, enter.y);
 		float leaveTime = std::min(leave.x, leave.y);
-		normal = {0.0f, 0.0f, 0.0f};
+		normal = { 0.0f, 0.0f, 0.0f };
 		if (enterTime > leaveTime)
 			return 1.0f;
 		if (enter.x < 0.0f && enter.y < 0.0f)
@@ -88,7 +89,7 @@ namespace GameLib {
 			if (ap2.y < bp1.y || ap1.y > bp2.y)
 				return 1.0f;
 		}
-		//if (enter.x > 1.0f || enter.y > 1.0f) {
+		// if (enter.x > 1.0f || enter.y > 1.0f) {
 		//	if (enter.x > enter.y) {
 		//		HFLOGDEBUG("missing a condition?");
 		//	}
@@ -97,23 +98,62 @@ namespace GameLib {
 
 		if (enter.x > enter.y) {
 			if (inverseEnter.x < 0.0f) {
-				normal = {1.0f, 0.0f, 0.0f};
+				normal = { 1.0f, 0.0f, 0.0f };
 			} else {
-				normal = {-1.0f, 0.0f, 0.0f};
+				normal = { -1.0f, 0.0f, 0.0f };
 			}
 		} else {
 			if (inverseEnter.y < 0.0f) {
-				normal = {0.0f, 1.0f, 0.0f};
+				normal = { 0.0f, 1.0f, 0.0f };
 			} else {
-				normal = {0.0f, -1.0f, 0.0f};
+				normal = { 0.0f, -1.0f, 0.0f };
 			}
 		}
 
 		return enterTime;
 	}
 
+
+	void SimplePhysicsComponent::beginPlay(Actor& a) {
+		auto box2d = Locator::getBox2D();
+		if (box2d && a.box2dId < 0) {
+			a.box2dId = box2d->initBody(
+				a.box2dType,
+				a.center2d(),
+				a.sizeHalf2d(),
+				a.physicsInfo.density,
+				a.physicsInfo.friction);
+		}
+	}
+
+
+	void SimplePhysicsComponent::preupdate(Actor& a) {
+		auto box2d = Locator::getBox2D();
+		if (box2d && a.box2dId >= 0) {
+			auto body = box2d->getBody(a.box2dId, a.box2dType);
+			body->setPosition(a.center2d());
+			body->setVelocity(a.velocity2d());
+			body->body->ApplyLinearImpulseToCenter({ a.physicsInfo.a.x, a.physicsInfo.a.y }, false);
+		}
+	}
+
+
+	void SimplePhysicsComponent::postupdate(Actor& a) {
+		auto box2d = Locator::getBox2D();
+		if (box2d && a.box2dId >= 0) {
+			auto body = box2d->getBody(a.box2dId, a.box2dType);
+			a.setCenter2d(body->position());
+			auto velocity = body->velocity();
+			if (glm::length(velocity) > 32) {
+				velocity = glm::normalize(velocity) * 32.0f;
+			}
+			a.setVelocity2d(velocity);
+		}
+	}
+
+
 	void SimplePhysicsComponent::update(Actor& a, World& w) {
-		a.position += a.dt * a.speed * a.velocity;
+		//a.position += a.dt * a.speed * a.velocity;
 		if (a.clipToWorld) {
 			a.position.x = clamp<float>(a.position.x, 0, (float)w.worldSizeX - a.size.x);
 			a.position.y = clamp<float>(a.position.y, 0, (float)w.worldSizeY - a.size.y);
@@ -125,28 +165,25 @@ namespace GameLib {
 		int aiy = (int)a.position.y;
 		bool fracX = a.position.x - aix > 0;
 		bool fracY = a.position.y - aiy > 0;
+		int anyhit=0;
 		if (w.getTile(aix, aiy).solid())
-			return true;
+			anyhit|=1;
 		if (fracX && w.getTile(aix + 1, aiy).solid())
-			return true;
+			anyhit |= 1;
 		if (fracY && w.getTile(aix, aiy + 1).solid())
-			return true;
+			anyhit |= 1;
 		if (fracX && fracY && w.getTile(aix + 1, aiy + 1).solid())
-			return true;
-		return false;
+			anyhit |= 1;
+		return anyhit;
 	}
 
-	bool SimplePhysicsComponent::collideDynamic(Actor& a, Actor& b) {
-		return collides(a, b);
-	}
+	bool SimplePhysicsComponent::collideDynamic(Actor& a, Actor& b) { return collides(a, b); }
 
 	bool SimplePhysicsComponent::collideStatic(Actor& a, Actor& b) {
 		return BroadPhaseAABB(a, b); // collides(a, b);
 	}
 
-	bool SimplePhysicsComponent::collideTrigger(Actor& a, Actor& b) {
-		return collides(a, b);
-	}
+	bool SimplePhysicsComponent::collideTrigger(Actor& a, Actor& b) { return collides(a, b); }
 
 	bool GameLib::TraceCurtisDynamicActorComponent::collideDynamic(Actor& a, Actor& b) {
 		glm::vec3 amin = a.position;
@@ -191,7 +228,7 @@ namespace GameLib {
 	}
 
 	bool GameLib::DainNickJosephWorldPhysicsComponent::collideWorld(Actor& a, World& w) {
-		
+
 		float subTileSize = 1.0;
 		for (float x = floor(a.position.x); x < ceil(a.position.x + a.size.x); x += subTileSize) {
 			if (w.getTilef(x, floor(a.position.y)).solid()) {
@@ -220,17 +257,17 @@ namespace GameLib {
 		}
 	}
 
-	 bool GameLib::TailonsDynamicPhysicsComponent::collideDynamic(Actor& a, Actor& b) { return collides(a, b); }
+	bool GameLib::TailonsDynamicPhysicsComponent::collideDynamic(Actor& a, Actor& b) { return collides(a, b); }
 
-    void GameLib::TailonsDynamicPhysicsComponent::update(Actor& a, World& w) {
-        a.position += a.dt * a.speed * a.velocity;
-        if (a.clipToWorld) {
-            a.position.x = clamp<float>(a.position.x, 0, (float)w.worldSizeX - a.size.x);
-            a.position.y = clamp<float>(a.position.y, 0, (float)w.worldSizeY - a.size.y);
-        }
-    }
+	void GameLib::TailonsDynamicPhysicsComponent::update(Actor& a, World& w) {
+		a.position += a.dt * a.speed * a.velocity;
+		if (a.clipToWorld) {
+			a.position.x = clamp<float>(a.position.x, 0, (float)w.worldSizeX - a.size.x);
+			a.position.y = clamp<float>(a.position.y, 0, (float)w.worldSizeY - a.size.y);
+		}
+	}
 
-    bool GameLib::TailonsStaticPhysicsComponent::collideStatic(Actor& a, Actor& b) { return collides(a, b); }
+	bool GameLib::TailonsStaticPhysicsComponent::collideStatic(Actor& a, Actor& b) { return collides(a, b); }
 
-    void GameLib::TailonsStaticPhysicsComponent::update(Actor& a, World& w) {}
+	void GameLib::TailonsStaticPhysicsComponent::update(Actor& a, World& w) {}
 } // namespace GameLib

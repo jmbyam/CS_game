@@ -98,7 +98,7 @@ namespace GameLib {
             result = false;
         }
 
-        constexpr int frequency = 48000;
+		constexpr int frequency = 48000;
         constexpr int channels = 2;
         if (Mix_OpenAudio(frequency, MIX_DEFAULT_FORMAT, channels, 4096) != 0) {
             HFLOGERROR("Failed to open audio: %s", SDL_GetError());
@@ -499,14 +499,23 @@ namespace GameLib {
         return Mix_PlayChannel(-1, audio->chunk, 0);
     }
 
-    void Context::stopAudioChannel(int channel) { Mix_HaltChannel(channel); }
+    void Context::stopAudioChannel(int channel) {
+		if (!audioInitialized_)
+			return;
+		Mix_HaltChannel(channel);
+	}
 
     void Context::setChannelVolume(int channel, float volume) {
+		if (!audioInitialized_) return;
         int v = (int)clamp(volume * 128.0f + 0.5f, 0.0f, 128.0f);
         Mix_Volume(channel, v);
     }
 
-    float Context::getChannelVolume(int channel) { return clamp(Mix_Volume(channel, -1) / 128.0f, 0.0f, 1.0f); }
+    float Context::getChannelVolume(int channel) {
+		if (!audioInitialized_)
+			return 0.0f;
+		return clamp(Mix_Volume(channel, -1) / 128.0f, 0.0f, 1.0f);
+	}
 
     MUSICINFO* Context::initMusicClip(int musicId) {
         if (musicClips_[musicId]) {
