@@ -205,8 +205,7 @@ namespace GameLib {
 
 		// set main sprite id, configures anim sprite id if 0
 		uint setSprite(uint libId, uint id) {
-			if (anim.baseId == 0)
-				anim.baseId = id;
+			anim.baseId = id;
 			sprite.libId = libId;
 			sprite.id = id;
 			return id;
@@ -362,25 +361,16 @@ namespace GameLib {
 		// current velocity (in world units)
 		glm::vec3 velocity{ 0.0f, 0.0f, 0.0f };
 
-		struct BOX2D {
-			b2BodyDef bodyDef;
-			b2Body* body{ nullptr };
-
-			void initPhysics(World& world) {
-				bodyDef.type = b2_dynamicBody;
-				bodyDef.position.Set(0.0f, 0.0f);
-				body = world.createBody(&bodyDef);
-			}
-		} box2d;
-
 		// maximum speed (in world units)
 		float speed{ 1.0f };
 
 		struct PHYSICSINFO {
-			float mass{ 1.0f };
+			float density{ 1.0f };
+			float friction{ 0.3f };
 			glm::vec3 v{ 0.0f, 0.0f, 0.0f };
 			glm::vec3 v_t{ 0.0f, 0.0f, 0.0f };
 			glm::vec3 v_n{ 0.0f, 0.0f, 0.0f };
+			glm::vec3 a{ 0.0f, 0.0f, 0.0f };
 		} physicsInfo;
 
 		////////////////////////////////////////////////////

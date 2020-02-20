@@ -160,6 +160,7 @@
     <ClInclude Include="gamelib.hpp" />
     <ClInclude Include="gamelib_actor.hpp" />
     <ClInclude Include="gamelib_actor_component.hpp" />
+    <ClInclude Include="gamelib_box2d.hpp" />
     <ClInclude Include="gamelib_font.hpp" />
     <ClInclude Include="gamelib_graphics_component.hpp" />
     <ClInclude Include="gamelib_audio.hpp" />
@@ -183,6 +184,7 @@
   <ItemGroup>
     <ClCompile Include="gamelib_actor.cpp" />
     <ClCompile Include="gamelib_actor_component.cpp" />
+    <ClCompile Include="gamelib_box2d.cpp" />
     <ClCompile Include="gamelib_font.cpp" />
     <ClCompile Include="gamelib_graphics_component.cpp" />
     <ClCompile Include="gamelib_audio.cpp" />
