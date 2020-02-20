@@ -1,4 +1,5 @@
 #include "pch.h"
+#include <gamelib_base.hpp>
 #include <gamelib_locator.hpp>
 #include <gamelib_physics_component.hpp>
 #include <limits>
@@ -133,7 +134,7 @@ namespace GameLib {
 			auto body = box2d->getBody(a.box2dId, a.box2dType);
 			body->setPosition(a.center2d());
 			body->setVelocity(a.velocity2d());
-			body->body->ApplyLinearImpulseToCenter({ a.physicsInfo.a.x, a.physicsInfo.a.y }, false);
+			body->applyImpulse({ a.physicsInfo.a.x, a.physicsInfo.a.y });
 		}
 	}
 

@@ -1,7 +1,7 @@
 #ifndef GAMELIB_ACTOR_HPP
 #define GAMELIB_ACTOR_HPP
 
-#include <box2d/box2d.h>
+#include <gamelib_base.hpp>
 #include <gamelib_actor_component.hpp>
 #include <gamelib_graphics_component.hpp>
 #include <gamelib_input_component.hpp>

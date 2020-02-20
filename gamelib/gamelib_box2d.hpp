@@ -40,6 +40,8 @@ namespace GameLib {
 		// sets linear velocity of body
 		void setVelocity(glm::vec2 v) { body->SetLinearVelocity({ v.x, v.y }); }
 
+		void applyImpulse(glm::vec2 v) { body->ApplyLinearImpulse({ v.x, v.y }, body->GetPosition(), false); }
+
 		// returns current position of body
 		glm::vec2 position() const {
 			auto p = body->GetPosition();
