@@ -30,7 +30,9 @@ namespace GameLib {
 		}
 
 		// update acceleration
-		glm::vec3 acceleration = -w.worldPhysicsInfo.d / a.physicsInfo.mass * a.velocity;
+		float volume = a.size.x * a.size.y * a.size.z;
+		float mass = a.physicsInfo.density * volume;
+		glm::vec3 acceleration = -w.worldPhysicsInfo.d / mass * a.velocity;
 		if (a.physicsInfo.v.y > 0.0f)
 			acceleration += 5.0f * w.worldPhysicsInfo.g;
 		else
@@ -51,4 +53,18 @@ namespace GameLib {
 			a.position.y = clamp<float>(a.position.y, 1, (float)w.worldSizeY - a.size.y - 1);
 		}
 	}
+
+	void debugDrawSDF(Actor& a, Actor& b);
+
+	bool NewtonPhysicsComponent::collideDynamic(Actor& a, Actor& b) {
+		debugDrawSDF(a, b);
+		return SimplePhysicsComponent::collideDynamic(a, b);
+	}
+
+	bool NewtonPhysicsComponent::collideStatic(Actor& a, Actor& b) {
+		debugDrawSDF(a, b);
+		return SimplePhysicsComponent::collideStatic(a, b);
+	}
+
+
 } // namespace GameLib

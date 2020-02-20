@@ -47,6 +47,7 @@ protected:
 	GameLib::InputHandler input;
 	GameLib::Graphics graphics{ &context };
 	GameLib::World world;
+	GameLib::Box2D box2d;
 	GameLib::Font gothicfont{ &context };
 	GameLib::Font minchofont{ &context };
 	SDL_Color backColor{ GameLib::Azure };

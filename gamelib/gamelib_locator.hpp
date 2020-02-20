@@ -6,6 +6,7 @@
 #include <gamelib_audio.hpp>
 #include <gamelib_graphics.hpp>
 #include <gamelib_input_handler.hpp>
+#include <gamelib_box2d.hpp>
 
 namespace GameLib {
     class World;
@@ -39,6 +40,8 @@ namespace GameLib {
 		static void provide(World* world) { world_ = world; }
         static World* getWorld() { return world_; }
 
+		static void provide(Box2D* box2d) { box2d_ = box2d;}
+		static Box2D* getBox2D() {return box2d_;}
     private:
         static Context* context_;
 
@@ -51,6 +54,8 @@ namespace GameLib {
         static InputHandler* inputHandler_;
 
 		static World* world_;
+
+		static Box2D* box2d_;
     };
 }
 

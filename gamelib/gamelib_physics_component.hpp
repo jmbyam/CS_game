@@ -8,6 +8,12 @@ namespace GameLib {
 	class PhysicsComponent {
 	public:
 		virtual ~PhysicsComponent() {}
+		// handles needed initialization before play begins
+		virtual void beginPlay(Actor& actor) {}
+		// handles update of actor in the physics engine before update
+		virtual void preupdate(Actor& actor) {}
+		// handles update of actor after physics engine
+		virtual void postupdate(Actor& actor) {}
 		// handles updates of position, velocity, and acceleration
 		virtual void update(Actor& actor, World& world) {}
 		// handles collisions between world and actor
@@ -24,6 +30,9 @@ namespace GameLib {
 	public:
 		virtual ~SimplePhysicsComponent() {}
 
+		void beginPlay(Actor& actor) override;
+		void postupdate(Actor& a) override;
+		void preupdate(Actor& a) override;
 		void update(Actor& a, World& w) override;
 		bool collideWorld(Actor& a, World& w) override;
 		bool collideDynamic(Actor& a, Actor& b) override;

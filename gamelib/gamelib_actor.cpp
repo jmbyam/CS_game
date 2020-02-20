@@ -5,7 +5,8 @@
 namespace GameLib {
 	unsigned Actor::idSource_{ 0 };
 
-	Actor::Actor(InputComponentPtr input,
+	Actor::Actor(
+		InputComponentPtr input,
 		ActorComponentPtr actor,
 		PhysicsComponentPtr physics,
 		GraphicsComponentPtr graphics)
@@ -20,6 +21,8 @@ namespace GameLib {
 		t1 = t;
 		if (actor_)
 			actor_->beginPlay(*this);
+		if (physics_)
+			physics_->beginPlay(*this);
 	}
 
 	void Actor::update(float deltaTime, World& world) {
@@ -30,6 +33,16 @@ namespace GameLib {
 			input_->update(*this);
 		if (actor_)
 			actor_->update(*this, world);
+	}
+
+	void Actor::preupdate() {
+		if (physics_)
+			physics_->preupdate(*this);
+	}
+
+	void Actor::postupdate() {
+		if (physics_)
+			physics_->postupdate(*this);
 	}
 
 	void Actor::physics(float deltaTime, World& world) {

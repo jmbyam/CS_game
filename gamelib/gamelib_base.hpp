@@ -10,6 +10,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <hatchetfish.hpp>
+#include <Box2D/Box2D.h>
 
 #include <algorithm>
 #include <cmath>
@@ -26,6 +27,8 @@
 #include <vector>
 
 namespace GameLib {
+	static constexpr float EPSILON = 0.0001f;
+
 	struct SPRITEINFO {
 		glm::vec2 position;
 		float angle;

@@ -7,6 +7,7 @@ add_library(gamelib STATIC
     gamelib_actor.cpp
     gamelib_actor_component.cpp
     gamelib_audio.cpp
+    gamelib_box2d.cpp
     gamelib_command.cpp
     gamelib_context.cpp
     gamelib_font.cpp

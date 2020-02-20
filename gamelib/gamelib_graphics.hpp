@@ -32,6 +32,8 @@ namespace GameLib {
 		virtual void draw(int tileSetId, int tileId, float x, float y) {}
 		virtual void draw(int tileSetId, int tileId, int x, int y, int flipFlags) {}
 		virtual void draw(int x, int y, int w, int h, SDL_Color color) {}
+		virtual void draw(glm::ivec2 c, glm::ivec2 size, SDL_Color color) {}
+		virtual void line(glm::ivec2 p1, glm::ivec2 p2, SDL_Color color) {}
 	};
 
 	class Graphics : public IGraphics {
@@ -56,6 +58,8 @@ namespace GameLib {
 		void draw(int tileSetId, int tileId, float x, float y) override;
 		void draw(int tileSetId, int tileId, int x, int y, int flipFlags) override;
 		void draw(int x, int y, int w, int h, SDL_Color color) override;
+		void draw(glm::ivec2 c, glm::ivec2 size, SDL_Color color) override;
+		void line(glm::ivec2 p1, glm::ivec2 p2, SDL_Color color) override;
 
 		glm::ivec2 transform(glm::ivec2 p) override { return origin_ + offset_ - center_ + p; }
 

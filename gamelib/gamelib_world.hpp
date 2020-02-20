@@ -35,6 +35,7 @@ namespace GameLib {
 		char charDesc{ '?' };
 		unsigned spriteId{ 0 };
 		unsigned flags{ EMPTY };
+		int box2dId { -1 };
 	};
 
 	class Actor;
@@ -52,6 +53,7 @@ namespace GameLib {
 		void start(float t);
 		void update(float deltaTime);
 		void physics(float deltaTime);
+		void drawTiles(Graphics& graphics);
 		void draw(Graphics& graphics);
 
 		void setTile(int x, int y, Tile ptr);
@@ -106,6 +108,7 @@ namespace GameLib {
 
 	protected:
 		virtual void _draw(Graphics& g);
+		virtual void _addTileToPhysics(int x, int y);
 	};
 } // namespace GameLib
 

@@ -115,7 +115,7 @@ int main(int argc, char** argv) {
 	context.addSearchPath("../assets");
 	SDL_Texture* testPNG = context.loadImage("godzilla.png");
 	SDL_Texture* testJPG = context.loadImage("parrot.jpg");
-	graphics.setTileSize(32, 32);
+	graphics.setTileSize({ 32, 32 });
 	int spriteCount = context.loadTileset(0, 32, 32, "GingerRun.png");
 	if (!spriteCount) {
 		HFLOGWARN("Tileset not found");

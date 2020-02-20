@@ -23,6 +23,7 @@ find_library(SDL2_IMAGE_LIB NAMES SDL2_image)
 find_library(SDL2_MIXER_LIB NAMES SDL2_mixer)
 find_library(SDL2_TTF_LIB NAMES SDL2_ttf)
 find_library(CZMQ_LIB NAMES czmq)
+find_library(BOX2D_LIB NAMES Box2D)
 
 target_link_libraries(
     ${PROJECT_NAME}
@@ -30,7 +31,8 @@ target_link_libraries(
     ${SDL2_IMAGE_LIB}
     ${SDL2_MIXER_LIB}
     ${SDL2_TTF_LIB}
-    ${CZMQ_LIB})
+    ${CZMQ_LIB}
+    ${BOX2D_LIB})
 
 install(TARGETS simplegame DESTINATION bin)
 

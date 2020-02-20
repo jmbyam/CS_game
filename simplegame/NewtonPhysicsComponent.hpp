@@ -7,6 +7,8 @@ namespace GameLib {
 	class NewtonPhysicsComponent: public SimplePhysicsComponent {
 	public:
 		void update(Actor& a, World& world) override;
+		bool collideDynamic(Actor& a, Actor& b) override;
+		bool collideStatic(Actor& a, Actor& b) override;
 	};
 } // namespace GameLib
 
