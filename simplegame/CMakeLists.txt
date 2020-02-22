@@ -23,7 +23,7 @@ find_library(SDL2_IMAGE_LIB NAMES SDL2_image)
 find_library(SDL2_MIXER_LIB NAMES SDL2_mixer)
 find_library(SDL2_TTF_LIB NAMES SDL2_ttf)
 find_library(CZMQ_LIB NAMES czmq)
-find_library(BOX2D_LIB NAMES Box2D)
+find_library(BOX2D_LIB NAMES Box2D box2d PATHS ../../box2d/build/src)
 
 target_link_libraries(
     ${PROJECT_NAME}

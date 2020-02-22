@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.13)
 project(gamelib)
 include_directories(${PROJECT_SOURCE_DIR})
-
+include_directories(${PROJECT_SOURCE_DIR}../../box2d/include)
 add_library(gamelib STATIC
     gamelib.cpp
     gamelib_actor.cpp

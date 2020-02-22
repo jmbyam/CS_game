@@ -16,6 +16,9 @@ if (APPLE)
 #    set(STD_CXX_FS c++fs)
 endif()
 
+include_directories(~/github/box2d/include)
+link_directories(~/github/box2d/build/src)
+
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_EXTENSIONS OFF)

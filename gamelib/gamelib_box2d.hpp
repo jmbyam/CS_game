@@ -1,7 +1,13 @@
 #ifndef GAMELIB_BOX2D_HPP
 #define GAMELIB_BOX2D_HPP
 
-#include <Box2D/Box2D.h>
+#if __has_include(<box2d/box2d.h>)
+#include <box2d/box2d.h>
+#elif __has_include(<Box2D/Box2D.h>)
+#include <Box2d/Box2d.h>
+#else
+#error "Box2D headers not found"
+#endif
 #include <glm/glm.hpp>
 #include <hatchetfish.hpp>
 

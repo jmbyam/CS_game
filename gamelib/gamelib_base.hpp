@@ -10,7 +10,13 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <hatchetfish.hpp>
+#if __has_include(<box2d/box2d.h>)
+#include <box2d/box2d.h>
+#elif __has_include(<Box2D/Box2D.h>)
 #include <Box2D/Box2D.h>
+#else
+#error "Box2D headers not found"
+#endif
 
 #include <algorithm>
 #include <cmath>
