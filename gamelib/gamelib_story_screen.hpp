@@ -6,9 +6,11 @@
 #include <gamelib_world.hpp>
 
 namespace GameLib {
+
 	// StoryScreen
 	// This presents a story screen
-	class StoryScreen {
+	class StoryScreen 
+	{
 	public:
 		StoryScreen();
 
@@ -247,6 +249,16 @@ namespace GameLib {
 		void _reflowText(Dialogue& d);
 	};
 
-} // namespace GameLib
+	class DialogueScreen : public StoryScreen
+	{
+	public:
+		DialogueScreen();
+		void _drawFrame() override;
+		void play();
+		DialogueScreen& createDialogueScreen(std::string dialogue);
+		void displayDialogue(DialogueScreen& ds);
+	};
 
+	
+} // namespace GameLib
 #endif

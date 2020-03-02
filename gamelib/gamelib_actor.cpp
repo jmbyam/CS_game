@@ -118,4 +118,5 @@ namespace GameLib {
 	void Actor::makeStatic() { type_ = STATIC; }
 
 	void Actor::makeTrigger() { type_ = TRIGGER; }
+
 } // namespace GameLib

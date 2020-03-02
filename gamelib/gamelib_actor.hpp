@@ -318,6 +318,8 @@ namespace GameLib {
 		// FLAGS ///////////////////////////////////////////
 		////////////////////////////////////////////////////
 
+		// id object win the game
+		ubool didWeWin{ false };
 		// is object visible for drawing
 		ubool visible{ true };
 		// is actor active for updating

@@ -466,4 +466,169 @@ namespace GameLib {
 		os << "-1\n";
 		return true;
 	}
+
+	DialogueScreen::DialogueScreen()
+	{
+		context = Locator::getContext();
+		screenWidth = (float)context->screenWidth;
+		screenHeight = (float)context->screenHeight;
+		screenSize = std::min(screenWidth, screenHeight);
+		ptsize = (int)(screenSize / 25.0f);
+		for (auto i = 0; i < MAX_FONTS; ++i) {
+			fonts[i].font = std::make_unique<Font>(context);
+		}
+		newFrame(0, 0, 0, 0, 0, 0);
+	}
+
+	void DialogueScreen::_drawFrame()
+	{
+		// determine frame and fade frame
+		int prevframe = curframe - 1;
+		if (prevframe < 0)
+			prevframe = 0;
+		int nextframe = curframe + 1;
+		if (nextframe >= dialogue.size())
+			nextframe = curframe;
+		Dialogue& frame = dialogue[curframe];
+		Dialogue& fadeFrame = dialogue[framePct < 0.5f ? prevframe : nextframe];
+
+		// determine curves
+
+		auto ucurve = [](float t, float tmin, float tmax, int flags) {
+			float pct = clamp(t, 0.0f, 1.0f);
+			t = 1.0f;
+			if (flags & 1 && pct < tmin)
+				t = pct / tmin;
+			if (flags & 2 && pct > tmax)
+				t = 1.0f - (pct - tmax) / (1.0f - tmax);
+			t = clamp(t, 0.0f, 1.0f);
+			if (flags & 4)
+				return 1.0f - t;
+			return t;
+		};
+
+
+		auto osc = [](float t, float A, float omega, float phi, int flags) {
+			float lfo = A * std::cos((t * 3.1415926f / 180.0f) * omega + phi);
+			// positive 0 to 1?
+			if (flags & 1)
+				lfo = 0.5f * lfo + 0.5f;
+			// inverse (1 - lfo)
+			if (flags & 2)
+				lfo = 1.0f - lfo;
+			return lfo;
+		};
+
+		auto calcLfo = [](float x, float lfo, glm::vec2 lfoParams) {
+			float mix = glm::mix(lfoParams.x, lfoParams.y, lfo);
+			return x + mix;
+		};
+
+		// frameCurve ramps up to 1, then back down
+		float frameCurve = 1.0f;
+		if (framePct < 0.1f)
+			frameCurve = framePct * 10.0f;
+		if (framePct > 0.9f)
+			frameCurve = 1.0f - (framePct - 0.9f) * 10.0f;
+		frameCurve = clamp(frameCurve, 0.0f, 1.0f);
+
+		// fadeCurve is 0, then ramps up to 1
+		float fadeCurve = framePct > 0.9f ? 1.0f - frameCurve : 0.0f;
+		// textFade is 1, then ramps down to 0
+		float inverseFadeCurve = 1.0f - fadeCurve;
+		// imageCurve is
+		float imageCurve = ucurve(framePct, 0.3f, 0.7f, 3);
+
+
+		// determine colors based on curves
+
+		SDL_Color bcolor1 = MakeColor(frame.backColor1);
+		SDL_Color bcolor2 = MakeColor(frame.backColor2);
+		SDL_Color color1 = mix(bcolor1, bcolor2, framePct);
+		SDL_Color color2 = MakeColor(fadeFrame.backColor1);
+		SDL_Color backColor = mix(color1, color2, fadeCurve);
+		SDL_Color headerFG = mix(backColor, MakeColor(frame.headerColor), frameCurve);
+		SDL_Color headerBG = mix(backColor, MakeColor(frame.headerShadow), frameCurve);
+		SDL_Color textFG = mix(backColor, MakeColor(frame.textColor), inverseFadeCurve);
+		SDL_Color textBG = mix(backColor, MakeColor(frame.textShadow), inverseFadeCurve);
+		//context->clearScreen(backColor);
+
+		// story text
+		if (!dialogue[curframe].lines.empty()) {
+			FONTINFO& f = fonts[frame.headerFont];
+			int w = f.calcWidth(frame.headerText);
+			TEXTRECT tr;
+			tr.reset(0, context->screenHeight - f.h*4, context->screenWidth, context->screenHeight >> 1, 10);
+			tr.calc(f.halign, f.valign, w, f.h);
+			for (auto v : dialogue[curframe].lines)
+			{
+				f.draw(tr.x, tr.y, v, GameLib::White, GameLib::Black);
+				tr.y += f.h;
+			}
+		}
+	}
+
+
+	void DialogueScreen::play() {
+		curframe = 0;
+		Hf::StopWatch stopwatch;
+
+		InputCommand abutton;
+		InputCommand enterButton;
+		InputCommand escapeButton;
+		InputHandler input;
+		input.buttonA = &abutton;
+		input.start = &enterButton;
+		input.back = &escapeButton;
+		GameLib::InputHandler* oldinput = Locator::getInput();
+		Locator::provide(&input);
+
+		float t0 = stopwatch.stop_msf();
+		tickCount = 0;
+		_advanceFrame(0);
+		while (!donePlaying) {
+			context->getEvents();
+			input.handle();
+			float t1 = stopwatch.stop_sf();
+			float dt = t1 - t0;
+			lag += dt;
+			t0 = t1;
+			framePct = tickCount / (float)dialogue[curframe].duration;
+			while (lag >= MS_PER_UPDATE) {
+				_updateFrame();
+				lag -= MS_PER_UPDATE;
+				ticksLeft--;
+				tickCount++;
+			}
+			_drawFrame();
+			bool a = abutton.checkClear();
+			bool b = enterButton.checkClear();
+			bool c = escapeButton.checkClear();
+			bool anykey = a || b || c;
+			if (ticksLeft < 0 || anykey) {
+				_advanceFrame(curframe + 1);
+				tickCount = 0.0f;
+			}
+			context->swapBuffers();
+		}
+
+		Locator::provide(oldinput);
+	}
+
+
+	DialogueScreen& DialogueScreen::createDialogueScreen(std::string dialogue)
+	{
+		setFont(0, "URWClassico-Bold.ttf", 1.0f);
+		setFontStyle(1, 0, HALIGN_CENTER, VALIGN_CENTER);
+		newFrame(10000, GameLib::BLACK, 3, GameLib::RED, 2, GameLib::YELLOW);
+		frameLine(0, dialogue);
+		return *this;
+	}
+
+	void DialogueScreen::displayDialogue(DialogueScreen& ds)
+	{
+		ds.play();
+	}
+
+
 } // namespace GameLib
