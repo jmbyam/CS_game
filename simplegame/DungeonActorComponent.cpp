@@ -23,13 +23,19 @@ namespace GameLib {
 			}
 		}
 
+		if (a.position.x - a.lastPosition.x > 0 ){
+			a.anim.baseId = 0;
+		} else {
+			a.anim.baseId = 1;
+		}
+
 		if (a.isTrigger()) {
 			if (triggerInfo.t > 0.0f) {
 				a.position.y = triggerInfo.position.y + std::sin(50.0f * triggerInfo.t) * 0.25f;
 				triggerInfo.t -= a.dt;
 				if (triggerInfo.t < 0.0f) {
 					a.position = triggerInfo.position;
-					a.anim.baseId = a.spriteId();
+					a.anim.baseId = 4;
 				}
 			}
 		}
@@ -365,13 +371,14 @@ namespace GameLib {
 		HFLOGDEBUG("Trigger actor '%d' is now overlapped by actor '%d'", a.getId(), b.getId());
 		if (triggerInfo.t <= 0.0f) {
 			// if we are not already animating
-			a.anim.baseId = a.spriteId() + 50;
+			a.anim.baseId = a.spriteId() + 2;
 		}
 		triggerInfo.position = a.position;
 		triggerInfo.t = 2.0f;
 		b.position.x = 1 + random.positive() * (Locator::getWorld()->worldSizeX - 2);
 		b.position.y = 1 + random.positive() * (Locator::getWorld()->worldSizeY - 2);
-		Locator::getAudio()->playAudio(1, true);
+        
+        Locator::getAudio()->playAudio(1, true);
 	}
 
 

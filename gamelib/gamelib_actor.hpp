@@ -242,7 +242,7 @@ namespace GameLib {
 		struct ANIMINFO {
 			int baseId{ 0 };
 			int count{ 1 };
-			float speed{ 8.0f };
+			float speed{ 4.0f };
 			enum { CYCLE, SINGLE, BOUNCE };
 			int type{ CYCLE };
 
@@ -391,7 +391,7 @@ namespace GameLib {
 		glm::vec3 velocity{ 0.0f, 0.0f, 0.0f };
 
 		// maximum speed (in world units)
-		float speed{ 1.0f };
+		float speed{ 0.5f };
 
 		struct PHYSICSINFO {
 			float density{ 1.0f };

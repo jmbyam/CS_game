@@ -100,9 +100,9 @@ namespace GameLib {
 		// Global physics constants for world
 		struct PHYSICSINFO {
 			float c_r{ 0.5f };				 // coefficient of resitution
-			float c_f{ 0.5f };				 // coefficient of friction
+			float c_f{ 50.0f };				 // coefficient of friction
 			glm::vec3 g{ 0.0f, 9.8f, 0.0f }; // gravity acceleration
-			float d{ 0.05f };				 // air resistance
+			float d{ 5.0f };				 // air resistance
 			glm::vec3 v_wind;				 // wind velocity
 		} worldPhysicsInfo;
 

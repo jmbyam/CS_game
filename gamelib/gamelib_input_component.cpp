@@ -7,11 +7,11 @@ namespace GameLib {
 	void SimpleInputComponent::update(Actor& actor) {
 		auto axis1 = Locator::getInput()->axis1X;
 		if (axis1)
-			actor.physicsInfo.a.x = axis1->getAmount();
+			actor.physicsInfo.a.x = (axis1->getAmount())/10;
 		//    actor.velocity.x = axis1->getAmount();
 		auto axis2 = Locator::getInput()->axis1Y;
 		if (axis2)
-			actor.physicsInfo.a.y = axis2->getAmount();
+			actor.physicsInfo.a.y = (axis2->getAmount())/10;
 		//    actor.velocity.y = axis2->getAmount();
 	}
 

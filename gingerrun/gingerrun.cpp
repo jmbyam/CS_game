@@ -149,7 +149,7 @@ int main(int argc, char** argv) {
 	Hf::StopWatch stopwatch;
 	double spritesDrawn = 0;
 	double frames = 0;
-	float globalSpeed = 16.0f;
+	float globalSpeed = 8.0f;
 	float cx = graphics.getCenterX() / (float)graphics.getTileSizeX();
 	float cy = graphics.getCenterY() / (float)graphics.getTileSizeY();
 	//(float)graphics.getTileSizeX();
